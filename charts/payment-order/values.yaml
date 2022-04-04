@@ -1,0 +1,180 @@
+# Default values for payment-order.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: docker.io/hrvestigo/payment-order-ms
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "SNAPSHOT-51"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8443
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+                - amd64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - payment-order
+          topologyKey: kubernetes.io/hostname
+
+secret:
+  decryptionKey: ""
+  datasourcePassword: ""
+  kafkaPassword: ""
+
+logger:
+  logToFile: false
+  rollingFileAppender: false
+
+deployment:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 60
+  terminationGracePeriodSeconds: 60
+  restartPolicy: Always  
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    timeoutSeconds: 181
+    successThreshold: 1
+    failureThreshold: 2
+    httpGet:
+      path: /health/readiness?__cbhck=Health/k8s
+      port: http
+      scheme: HTTPS
+      httpHeaders:
+        - name: Content-Type
+          value: application/json
+        - name: User-Agent
+          value: Health/k8s
+        - name: Host
+          value: localhost
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    timeoutSeconds: 10
+    failureThreshold: 3
+    httpGet:
+      path: /health/liveness?__cbhck=Health/k8s
+      port: http
+      scheme: HTTPS
+      httpHeaders:
+        - name: Content-Type
+          value: application/json
+        - name: User-Agent
+          value: Health/k8s
+        - name: Host
+          value: localhost
+
+appConfig:
+  timezone: Europe/Zagreb
+  datasource:
+    host: ""
+    port: ""
+    dbName: ""
+    user: ""
+    schema: ""
+    connTimeout: 60000
+    maxPoolSize: 2
+    minIdle: 0
+  kafka:
+    user: ""
+    servers: ""
+    topics:
+      paymentorder:
+        name: hr.vestigo.hp.paymentorder.01
+        consumerGroup: hr.vestigo.hp.paymentorder.01
+      sepainst:
+        name: hr.vestigo.hp.sepainst.01
+        consumerGroup: hr.vestigo.hp.sepainst.01
+      personstructure:
+        name: hr.vestigo.hp.personstructure.01
+        consumerGroup: hr.vestigo.hp.personstructure.01
+      paymentorderchecks:
+        name: hr.vestigo.hp.paymentorderchecks.01
+        consumerGroup: hr.vestigo.hp.paymentorderchecks.01
+      sirius:
+        name: hr.vestigo.hp.sirius.01
+        consumerGroup: hr.vestigo.hp.sirius.01
+
+mountTrustStoreFromSecret:
+  enabled: false
+  secretName: ""
+  certPath: ""
+  keyPath: ""
+
+mountKeyStoreFromSecret:
+  enabled: false
+  secretName: ""
+  location: ""
+  path: ""
+
+customVolumes: []
+
+customMounts: []
+
+customEnv: []
