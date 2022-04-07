@@ -2,26 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "payment-order.name" -}}
-{{/*- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" */}}
 {{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "payment-order.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
 {{- end }}
 
 {{/*
@@ -58,17 +39,17 @@ Volumes
 */}}
 {{- define "payment-order.volumes" -}}
 {{ toYaml .Values.customVolumes | default "" }}
-- name: {{ .Release.Name }}-secret
+- name: {{ include "payment-order.name" . }}-secret
   secret:
-    secretName: {{ .Release.Name }}-secret
+    secretName: {{ include "payment-order.name" . }}-secret
     items:
       - path: password.conf
         key: password.conf
-- name: {{ .Release.Name }}-configmap
+- name: {{ include "payment-order.name" . }}-configmap
   configMap:
-    name: {{ .Release.Name }}-configmap
-{{- if .Values.mountTrustStoreFromSecret.enabled }}
+    name: {{ include "payment-order.name" . }}-configmap
 - name: truststore
+{{- if .Values.mountTrustStoreFromSecret.enabled }}
   secret:
     secretName: {{ .Values.mountTrustStoreFromSecret.secretName }}
 {{- if and .Values.mountTrustStoreFromSecret.certPath .Values.mountTrustStoreFromSecret.keyPath }}
@@ -79,7 +60,6 @@ Volumes
         key: {{ .Values.mountTrustStoreFromSecret.keyPath }}
 {{- end }}
 {{- else }}
-- name: truststore
   emptyDir:
     medium: "Memory"
 {{- end }}
@@ -101,17 +81,17 @@ Mounts for payment-order application
 {{- define "payment-order.mounts" -}}
 {{ toYaml .Values.customMounts | default "" }}
 - mountPath: /mnt/k8s/secrets/
-  name: {{ .Release.Name }}-secret
+  name: {{ include "payment-order.name" . }}-secret
 - mountPath: /usr/app/config
-  name: {{ .Release.Name }}-configmap
+  name: {{ include "payment-order.name" . }}-configmap
 {{- if .Values.mountTrustStoreFromSecret.enabled }}
 - mountPath: /mnt/k8s/tls-server/key.pem
-  name: {{ .Release.Name }}-tls
+  name: truststore
 {{- if .Values.mountTrustStoreFromSecret.keyPath }}
   subPath: {{ .Values.mountTrustStoreFromSecret.keyPath }}
 {{- end }}
 - mountPath: /mnt/k8s/tls-server/cert.pem
-  name: {{ .Release.Name }}-tls
+  name: truststore
 {{- if .Values.mountTrustStoreFromSecret.certPath }}
   subPath: {{ .Values.mountTrustStoreFromSecret.certPath }}
 {{- end }}

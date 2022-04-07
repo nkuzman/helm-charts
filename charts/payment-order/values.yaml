@@ -12,7 +12,6 @@ image:
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
 
 podAnnotations: {}
 
@@ -41,6 +40,8 @@ resources:
   requests:
     cpu: 50m
     memory: 256Mi
+
+initContainers: []
 
 autoscaling:
   enabled: false
@@ -130,36 +131,39 @@ deployment:
         - name: Host
           value: localhost
 
-appConfig:
-  timezone: Europe/Zagreb
-  datasource:
-    host: ""
-    port: ""
-    dbName: ""
-    user: ""
-    schema: ""
-    connTimeout: 60000
-    maxPoolSize: 2
-    minIdle: 0
-  kafka:
-    user: ""
-    servers: ""
-    topics:
-      paymentorder:
-        name: hr.vestigo.hp.paymentorder.01
-        consumerGroup: hr.vestigo.hp.paymentorder.01
-      sepainst:
-        name: hr.vestigo.hp.sepainst.01
-        consumerGroup: hr.vestigo.hp.sepainst.01
-      personstructure:
-        name: hr.vestigo.hp.personstructure.01
-        consumerGroup: hr.vestigo.hp.personstructure.01
-      paymentorderchecks:
-        name: hr.vestigo.hp.paymentorderchecks.01
-        consumerGroup: hr.vestigo.hp.paymentorderchecks.01
-      sirius:
-        name: hr.vestigo.hp.sirius.01
-        consumerGroup: hr.vestigo.hp.sirius.01
+timezone: ""
+
+datasource:
+  host: ""
+  port: ""
+  dbName: ""
+  user: ""
+  schema: ""
+  connTimeout: 60000
+  maxPoolSize: 2
+  minIdle: 0
+
+kafka:
+  user: ""
+  servers: ""
+  saslMechanism: PLAIN
+  securityProtocol: SASL_SSL
+  topics:
+    paymentorder:
+      name: hr.vestigo.hp.paymentorder.01
+      consumerGroup: hr.vestigo.hp.paymentorder.01
+    sepainst:
+      name: hr.vestigo.hp.sepainst.01
+      consumerGroup: hr.vestigo.hp.sepainst.01
+    personstructure:
+      name: hr.vestigo.hp.personstructure.01
+      consumerGroup: hr.vestigo.hp.personstructure.01
+    paymentorderchecks:
+      name: hr.vestigo.hp.paymentorderchecks.01
+      consumerGroup: hr.vestigo.hp.paymentorderchecks.01
+    sirius:
+      name: hr.vestigo.hp.sirius.01
+      consumerGroup: hr.vestigo.hp.sirius.01
 
 mountTrustStoreFromSecret:
   enabled: false

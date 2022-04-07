@@ -45,48 +45,50 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            {{- if .Values.timezone }}
             - name: TZ
-              value: {{ .Values.appConfig.timezone }}
+              value: {{ .Values.timezone }}
+            {{- end}}
             - name: SERVER_PORT
               value: "8443"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://{{- required "Please specify DB host name in .Values.appConfig.datasource.host" .Values.appConfig.datasource.host -}}:
-              {{- required "Please specify DB port in .Values.appConfig.datasource.port" .Values.appConfig.datasource.port -}}/
-              {{- required "Please specify database name in .Values.appConfig.datasource.dbName" .Values.appConfig.datasource.dbName -}}"
+              value: "jdbc:postgresql://{{- required "Please specify DB host name in .Values.datasource.host" .Values.datasource.host -}}:
+              {{- required "Please specify DB port in .Values.datasource.port" .Values.datasource.port -}}/
+              {{- required "Please specify database name in .Values.datasource.dbName" .Values.datasource.dbName -}}"
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ required "Please specify DB user in .Values.appConfig.datasource.user" .Values.appConfig.datasource.user | quote }}
+              value: {{ required "Please specify DB user in .Values.datasource.user" .Values.datasource.user | quote }}
             - name: SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA
-              value: {{ required "Please specify DB schema in .Values.appConfig.datasource.schema"  .Values.appConfig.datasource.schema | quote }}
+              value: {{ required "Please specify DB schema in .Values.datasource.schema"  .Values.datasource.schema | quote }}
             - name: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
-              value: PLAIN
+              value: {{ .Values.kafka.saslMechanism | quote }}
             - name: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
               value: >-
                 org.apache.kafka.common.security.plain.PlainLoginModule required username=
-                {{- required "Please specify Kafka user in .Values.appConfig.kafka.user" .Values.appConfig.kafka.user | quote }} password="${kafka.password}";
+                {{- required "Please specify Kafka user in .Values.kafka.user" .Values.kafka.user | quote }} password="${kafka.password}";
             - name: SPRING_KAFKA_PROPERTIES_BOOTSTRAP_SERVERS
-              value: {{ required "Please specify Kafka bootstrap servers in .Values.appConfig.kafka.servers" .Values.appConfig.kafka.servers | quote }}
+              value: {{ required "Please specify Kafka bootstrap servers in .Values.kafka.servers" .Values.kafka.servers | quote }}
             - name: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
-              value: SASL_SSL
+              value: {{ .Values.kafka.securityProtocol | quote }}
             - name: KAFKA_TOPIC_PAYMENTORDER_NAME
-              value: {{ .Values.appConfig.kafka.topics.paymentorder.name | quote }}
+              value: {{ .Values.kafka.topics.paymentorder.name | quote }}
             - name: KAFKA_TOPIC_SEPAINST_NAME
-              value: {{ .Values.appConfig.kafka.topics.sepainst.name | quote }}
+              value: {{ .Values.kafka.topics.sepainst.name | quote }}
             - name: KAFKA_TOPIC_PERSONSTRUCTURE_NAME
-              value: {{ .Values.appConfig.kafka.topics.personstructure.name | quote }}
+              value: {{ .Values.kafka.topics.personstructure.name | quote }}
             - name: KAFKA_TOPIC_PAYMENTORDERCHECKS_NAME
-              value: {{ .Values.appConfig.kafka.topics.paymentorderchecks.name | quote }}
+              value: {{ .Values.kafka.topics.paymentorderchecks.name | quote }}
             - name: KAFKA_TOPIC_SIRIUS_NAME
-              value: {{ .Values.appConfig.kafka.topics.sirius.name | quote }}
+              value: {{ .Values.kafka.topics.sirius.name | quote }}
             - name: KAFKA_CONSUMER_GROUP_PAYMENTORDER_NAME
-              value: {{ .Values.appConfig.kafka.topics.paymentorder.consumerGroup | quote }}
+              value: {{ .Values.kafka.topics.paymentorder.consumerGroup | quote }}
             - name: KAFKA_CONSUMER_GROUP_SEPAINST_NAME
-              value: {{ .Values.appConfig.kafka.topics.sepainst.consumerGroup | quote }}
+              value: {{ .Values.kafka.topics.sepainst.consumerGroup | quote }}
             - name: KAFKA_CONSUMER_GROUP_PERSONSTRUCTURE_NAME
-              value: {{ .Values.appConfig.kafka.topics.personstructure.consumerGroup | quote }}
+              value: {{ .Values.kafka.topics.personstructure.consumerGroup | quote }}
             - name: KAFKA_CONSUMER_GROUP_PAYMENTORDERCHECKS_NAME
-              value: {{ .Values.appConfig.kafka.topics.paymentorderchecks.consumerGroup | quote }}
+              value: {{ .Values.kafka.topics.paymentorderchecks.consumerGroup | quote }}
             - name: KAFKA_CONSUMER_GROUP_SIRIUS_NAME
-              value: {{ .Values.appConfig.kafka.topics.sirius.consumerGroup | quote }}
+              value: {{ .Values.kafka.topics.sirius.consumerGroup | quote }}
             - name: SERVER_SSL_KEYSTORE
               value: /tmp/tls.p12
             - name: SERVER_SSL_KEYSTORETYPE
@@ -127,11 +129,11 @@ spec:
             - name: LOGGER_EXCLUDE_ENDPOINTS
               value: /, /health, /health/liveness, /health/readiness
             - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
-              value: {{ .Values.appConfig.datasource.connTimeout | quote }}
+              value: {{ .Values.datasource.connTimeout | quote }}
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
-              value: {{ .Values.appConfig.datasource.maxPoolSize | quote }}
+              value: {{ .Values.datasource.maxPoolSize | quote }}
             - name: SPRING_DATASOURCE_HIKARI_MINIMUMIDLE
-              value: {{ .Values.appConfig.datasource.minIdle | quote }}
+              value: {{ .Values.datasource.minIdle | quote }}
             - name: SECRET_PROPERTIES
               value: /mnt/k8s/secrets/password.conf
             - name: KAFKA_HEALTH_ENABLED
