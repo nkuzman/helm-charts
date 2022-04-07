@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "person-structure.name" . }}
+  labels:
+    {{- include "person-structure.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "person-structure.selectorLabels" . | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.deployment.strategy | nindent 4 }}
+  minReadySeconds: {{ .Values.deployment.minReadySeconds }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "person-structure.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if not .Values.imagePullSecrets }}
+      {{ fail "Image pull secret not specified, please specify at least one in .Values.imagePullSecrets" }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
+      restartPolicy: {{ .Values.deployment.restartPolicy }}
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- if .Values.timezone }}
+            - name: TZ
+              value: {{ .Values.timezone }}
+            {{- end}}
+            - name: SERVER_PORT
+              value: "8443"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://{{- required "Please specify DB host name in .Values.datasource.host" .Values.datasource.host -}}:
+              {{- required "Please specify DB port in .Values.datasource.port" .Values.datasource.port -}}/
+              {{- required "Please specify database name in .Values.datasource.dbName" .Values.datasource.dbName -}}"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ required "Please specify DB user in .Values.datasource.user" .Values.datasource.user | quote }}
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA
+              value: {{ required "Please specify DB schema in .Values.datasource.schema"  .Values.datasource.schema | quote }}
+            - name: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
+              value: {{ .Values.kafka.saslMechanism | quote }}
+            - name: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+              value: >-
+                org.apache.kafka.common.security.plain.PlainLoginModule required username=
+                {{- required "Please specify Kafka user in .Values.kafka.user" .Values.kafka.user | quote }} password="${kafka.password}";
+            - name: SPRING_KAFKA_PROPERTIES_BOOTSTRAP_SERVERS
+              value: {{ required "Please specify Kafka bootstrap servers in .Values.kafka.servers" .Values.kafka.servers | quote }}
+            - name: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
+              value: {{ .Values.kafka.securityProtocol | quote }}
+            - name: KAFKA_TOPIC_CARD_NAME
+              value: {{ .Values.kafka.topics.card.name | quote }}
+            - name: KAFKA_TOPIC_CRDACC_NAME
+              value: {{ .Values.kafka.topics.crdacc.name | quote }}
+            - name: KAFKA_TOPIC_PERSONSTRUCTURE_NAME
+              value: {{ .Values.kafka.topics.personstructure.name | quote }}
+            - name: KAFKA_TOPIC_PAYMENTORDERCHECKS_NAME
+              value: {{ .Values.kafka.topics.paymentorderchecks.name | quote }}
+            - name: KAFKA_CONSUMER_GROUP_CARD_NAME
+              value: {{ .Values.kafka.topics.card.consumerGroup | quote }}
+            - name: KAFKA_CONSUMER_GROUP_CRDACC_NAME
+              value: {{ .Values.kafka.topics.crdacc.consumerGroup | quote }}
+            - name: KAFKA_CONSUMER_GROUP_PERSONSTRUCTURE_NAME
+              value: {{ .Values.kafka.topics.personstructure.consumerGroup | quote }}
+            - name: KAFKA_CONSUMER_GROUP_PAYMENTORDERCHECKS_NAME
+              value: {{ .Values.kafka.topics.paymentorderchecks.consumerGroup | quote }}
+            - name: SERVER_SSL_KEYSTORE
+              value: /tmp/tls.p12
+            - name: SERVER_SSL_KEYSTORETYPE
+              value: PKCS12
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: loggers,health,prometheus
+            - name: MANAGEMENT_ENDPOINTS_LOGGERS_ENABLED
+              value: "true"
+            - name: MANAGEMENT_ENDPOINTS_WEB_BASEPATH
+              value: /
+            - name: MANAGEMENT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_SHOWDETAILS
+              value: always
+            - name: MANAGEMENT_ENDPOINT_HEALTH_STATUS_HTTPMAPPING_DOWN
+              value: "418"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+              value: readinessState, db, kafka
+            - name: SERVER_TOMCAT_ACCESSLOG_ENABLED
+              value: "true"
+            - name: SERVER_TOMCAT_ACCESSLOG_SUFFIX
+              value: ".log"
+            - name: SERVER_TOMCAT_ACCESSLOG_PREFIX
+              value: access
+            - name: SERVER_TOMCAT_BASEDIR
+              value: var
+            - name: SERVER_TOMCAT_ACCESSLOG_FILEDATEFORMAT
+              value:
+            - name: SERVER_TOMCAT_ACCESSLOG_DIRECTORY
+              value: log/app
+            - name: SERVER_TOMCAT_ACCESSLOG_PATTERN
+              value: >-
+                [%{yyyy-MM-dd HH:mm:ss.SSS}t] %h %l %u "%r" %s
+            - name: SERVER_TOMCAT_ACCESSLOG_CONDITIONUNLESS
+              value: access
+            - name: LOGGING_CONFIG
+              value: /usr/app/config/log4j2.xml
+            - name: LOGGER_EXCLUDE_ENDPOINTS
+              value: /, /health, /health/liveness, /health/readiness
+            - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
+              value: {{ .Values.datasource.connTimeout | quote }}
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
+              value: {{ .Values.datasource.maxPoolSize | quote }}
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUMIDLE
+              value: {{ .Values.datasource.minIdle | quote }}
+            - name: SECRET_PROPERTIES
+              value: /mnt/k8s/secrets/password.conf
+            - name: KAFKA_HEALTH_ENABLED
+              value: "true"
+            - name: JAVA_OPTS
+              value: -Xms256M -Xmx256M
+            - name: BLAH
+              value: test test
+            {{- with .Values.customEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8443
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.deployment.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.deployment.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "person-structure.mounts" . | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- include "person-structure.volumes" . | nindent 8 }}
