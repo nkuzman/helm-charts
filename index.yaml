@@ -41,4 +41,15 @@ entries:
     urls:
     - https://github.com/nkuzman/helm-charts/releases/download/payment-order-0.1.2/payment-order-0.1.2.tgz
     version: 0.1.2
-generated: "2022-04-05T11:51:46.655219878Z"
+  person-structure:
+  - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2022-04-07T11:42:58.798153026Z"
+    description: Helm chart for person structure application
+    digest: a5e2eae259a515758db640af45b165c9eb401ccbcb4e55e3a1a2bec10472d42c
+    name: person-structure
+    type: application
+    urls:
+    - https://github.com/nkuzman/helm-charts/releases/download/person-structure-0.0.1/person-structure-0.0.1.tgz
+    version: 0.0.1
+generated: "2022-04-07T11:42:58.798168226Z"
