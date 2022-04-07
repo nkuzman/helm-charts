@@ -38,7 +38,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Volumes
 */}}
 {{- define "payment-order.volumes" -}}
-{{ toYaml .Values.customVolumes | default "" }}
+{{- with .Values.customVolumes -}}
+{{- toYaml . | default "" }}
+{{ "" }}
+{{- end -}}
 - name: {{ include "payment-order.name" . }}-secret
   secret:
     secretName: {{ include "payment-order.name" . }}-secret
@@ -79,7 +82,10 @@ Volumes
 Mounts for payment-order application
 */}}
 {{- define "payment-order.mounts" -}}
-{{ toYaml .Values.customMounts | default "" }}
+{{- with .Values.customMounts -}}
+{{- toYaml . | default "" }}
+{{ "" }}
+{{- end -}}
 - mountPath: /mnt/k8s/secrets/
   name: {{ include "payment-order.name" . }}-secret
 - mountPath: /usr/app/config

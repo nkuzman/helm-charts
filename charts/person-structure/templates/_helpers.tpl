@@ -38,7 +38,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Volumes
 */}}
 {{- define "person-structure.volumes" -}}
-{{ toYaml .Values.customVolumes | default "" }}
+{{- with .Values.customVolumes -}}
+{{- toYaml . | default "" }}
+{{ "" }}
+{{- end -}}
 - name: {{ include "person-structure.name" . }}-secret
   secret:
     secretName: {{ include "person-structure.name" . }}-secret
@@ -79,7 +82,10 @@ Volumes
 Mounts for person-structure application
 */}}
 {{- define "person-structure.mounts" -}}
-{{ toYaml .Values.customMounts | default "" }}
+{{- with .Values.customMounts -}}
+{{- toYaml . | default "" }}
+{{ "" }}
+{{- end -}}
 - mountPath: /mnt/k8s/secrets/
   name: {{ include "person-structure.name" . }}-secret
 - mountPath: /usr/app/config
