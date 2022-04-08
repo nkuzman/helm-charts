@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
-  
+{{- with .Values.logger }}
   <Properties>
-    <Property name="folder">/var/log/app</Property>
+    {{- if .logToFile }}
+    <Property name="folder">{{ .logDir }}</Property>
     <Property name="fileName">application.log</Property>
     <Property name="fileNameTomcat">messages.log</Property>
     <Property name="fileNameHealth">health.log</Property>
+    {{- end }}
     <Property name="defaultPattern">[%d %X{correlationId}] %p %c{1.} %m%n</Property>
     <Property name="healthPattern">[%d %X{correlationId}] %m%n</Property>
   </Properties>
@@ -15,7 +17,7 @@
       <PatternLayout pattern="[%d] [%X{correlationId}] %p %c{1.} %m%n"/>
     </Console>
 
-    {{- if .Values.logger.rollingFileAppender }}
+    {{- if and .logToFile .rollingFileAppender }}
     <Application
       name="Application"
       fileName="${folder}/${fileName}"
@@ -58,7 +60,7 @@
       <DefaultRolloverStrategy max="1000"/>
     </Application>
 
-    {{- else if .Values.logger.logToFile }}
+    {{- else if .logToFile }}
 
     <File name="Application" fileName="${folder}/${fileName}">
       <PatternLayout>
@@ -77,154 +79,155 @@
         <Pattern>${healthPattern}</Pattern>
       </PatternLayout>
     </File>
-    {{ end -}}
+    {{- end }}
 </Appenders>
 
   <Loggers>
     <Logger name="hr.vestigo" level="DEBUG" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.apache" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Tomcat"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.hibernate" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.jboss.resteasy" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.jboss.weld" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.flywaydb" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.reflections" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.jnp" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.xnio" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.springframework" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.springframework.orm.jpa" level="DEBUG" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="io.swagger" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="io.undertow" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="springfox" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="de.codecentric" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="io.jaegertracing" level="ERROR" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.springframework.boot.autoconfigure" level="ERROR" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.apache.kafka" level="INFO" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console"/>
     </Logger>
-    {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+    {{- if .logToFile }}
     <Logger name="hr.vestigo.springtemplate.app.filter.AccessLogFilter" level="DEBUG" additivity="false">
       <AppenderRef ref="Health"/>
     </Logger>
-    {{ end -}}
+    {{- end }}
     <Logger name="hr.vestigo.springtemplate.app.interceptors.CorrelationIdHttpInterceptor" level="DEBUG" additivity="false">
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
       <AppenderRef ref="Console" />
     </Logger>
 
 
     <Root level="INFO">
       <AppenderRef ref="Console"/>
-      {{- if or .Values.logger.logToFile .Values.logger.rollingFileAppender }}
+      {{- if .logToFile }}
       <AppenderRef ref="Application"/>
-      {{ end -}}
+      {{- end }}
     </Root>
   </Loggers>
+{{- end }}
 </Configuration>

@@ -76,6 +76,10 @@ Volumes
       - path: {{ .Values.mountKeyStoreFromSecret.path }}
         key: {{ .Values.mountKeyStoreFromSecret.path }}
 {{- end }}
+{{- if and .Values.logger.logDirMount.enabled .Values.logger.logDirMount.spec }}
+- name: logdir
+{{- toYaml .Values.logger.logDirMount.spec | nindent 2 }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -110,6 +114,10 @@ Mounts for person-structure application
 - mountPath: {{ .Values.mountKeyStoreFromSecret.location }}
   name: keystore
 {{- end }}
+{{- if and .Values.logger.logDirMount.enabled .Values.logger.logDirMount.spec }}
+- mountPath: {{ .Values.logger.logDir }}
+  name: logdir
+{{- end}}
 {{- end }}
 
 {{/*

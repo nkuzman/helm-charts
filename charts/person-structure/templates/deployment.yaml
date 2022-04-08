@@ -100,21 +100,33 @@ spec:
             - name: MANAGEMENT_ENDPOINT_HEALTH_SHOWDETAILS
               value: always
             - name: MANAGEMENT_ENDPOINT_HEALTH_STATUS_HTTPMAPPING_DOWN
-              value: "418"
+              value: {{ .Values.healthStatusDownReturnCode | quote }}
             - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
               value: readinessState, db, kafka
             - name: SERVER_TOMCAT_ACCESSLOG_ENABLED
-              value: "true"
+              value: {{ .Values.logger.logToFile | quote }}
             - name: SERVER_TOMCAT_ACCESSLOG_SUFFIX
               value: ".log"
             - name: SERVER_TOMCAT_ACCESSLOG_PREFIX
               value: access
             - name: SERVER_TOMCAT_BASEDIR
-              value: var
+              {{- $logdir := .Values.logger.logDir | splitList "/" }}
+              {{- if hasPrefix "/" .Values.logger.logDir }}
+              value: "/{{ index $logdir 1 }}"
+              {{- else }}
+              value: "/{{ index $logdir 0 }}"
+              {{- end }}
             - name: SERVER_TOMCAT_ACCESSLOG_FILEDATEFORMAT
-              value:
+              value: ""
             - name: SERVER_TOMCAT_ACCESSLOG_DIRECTORY
-              value: log/app
+              {{- $logdir := .Values.logger.logDir | splitList "/" }}
+              {{- if hasPrefix "/" .Values.logger.logDir }}
+              {{- $rest := slice $logdir 2 | join "/" }}
+              value: {{ $rest }}
+              {{- else }}
+              {{- $rest := slice $logdir 1 | join "/" }}
+              value: {{ $rest }}
+              {{- end }}
             - name: SERVER_TOMCAT_ACCESSLOG_PATTERN
               value: >-
                 [%{yyyy-MM-dd HH:mm:ss.SSS}t] %h %l %u "%r" %s
@@ -135,9 +147,7 @@ spec:
             - name: KAFKA_HEALTH_ENABLED
               value: "true"
             - name: JAVA_OPTS
-              value: -Xms256M -Xmx256M
-            - name: BLAH
-              value: test test
+              value: {{ .Values.javaOpts | quote }}
             {{- with .Values.customEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

@@ -87,6 +87,17 @@ secret:
 logger:
   logToFile: false
   rollingFileAppender: false
+  logDir: "/var/log"
+  logDirMount:
+    enabled: false
+    # spec:
+      # emptyDir: {}
+      # flexVolume:
+        # driver: ""
+        # fsType: ""
+        # options:
+          # basepath: ""
+          # basename: ""
 
 deployment:
   strategy:
@@ -131,6 +142,8 @@ deployment:
         - name: Host
           value: localhost
 
+healthStatusDownReturnCode: "418"
+
 timezone: ""
 
 datasource:
@@ -161,6 +174,8 @@ kafka:
     paymentorderchecks:
       name: hr.vestigo.hp.paymentorderchecks
       consumerGroup: hr.vestigo.hp.paymentorderchecks
+
+javaOpts: "-Xms256M -Xmx256M"
 
 mountTrustStoreFromSecret:
   enabled: false
