@@ -87,7 +87,7 @@ secret:
 logger:
   logToFile: false
   rollingFileAppender: false
-  logDir: "/var/log"
+  logDir: "/var/log/app"
   logDirMount:
     enabled: false
     # spec:
