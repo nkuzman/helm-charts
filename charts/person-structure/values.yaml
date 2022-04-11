@@ -79,10 +79,13 @@ affinity:
                   - person-structure
           topologyKey: kubernetes.io/hostname
 
+timezone: ""
+
 secret:
   decryptionKey: ""
   datasourcePassword: ""
   kafkaPassword: ""
+  kafkaSchemaRegistryPassword: ""
 
 logger:
   logToFile: false
@@ -144,8 +147,6 @@ deployment:
 
 healthStatusDownReturnCode: "418"
 
-timezone: ""
-
 datasource:
   host: ""
   port: ""
@@ -161,6 +162,10 @@ kafka:
   servers: ""
   saslMechanism: PLAIN
   securityProtocol: SASL_SSL
+  schemaRegistry:
+    credSource: USER_INFO
+    user: ""
+    url: ""
   topics:
     card:
       name: hr.vestigo.hp.card
@@ -168,22 +173,25 @@ kafka:
     crdacc:
       name: hr.vestigo.hp.crdacc
       consumerGroup: hr.vestigo.hp.crdacc
-    personstructure:
-      name: hr.vestigo.hp.personstructure
-      consumerGroup: hr.vestigo.hp.personstructure
-    paymentorderchecks:
-      name: hr.vestigo.hp.paymentorderchecks
-      consumerGroup: hr.vestigo.hp.paymentorderchecks
+    custcrdintacc:
+      name: hr.vestigo.hp.custcrdintacc
+      consumerGroup: hr.vestigo.hp.custcrdintacc
+    customeraccount:
+      name: hr.vestigo.hp.customeraccount
+      consumerGroup: hr.vestigo.hp.customeraccount
+    authptragrmtlimalc:
+      name: hr.vestigo.hp.authptragrmtlimalc
+      consumerGroup: hr.vestigo.hp.authptragrmtlimalc
 
 javaOpts: "-Xms256M -Xmx256M"
 
-mountTrustStoreFromSecret:
+mountKeyStoreFromSecret:
   enabled: false
   secretName: ""
   certPath: ""
   keyPath: ""
 
-mountKeyStoreFromSecret:
+mountTrustStoreFromSecret:
   enabled: false
   secretName: ""
   location: ""

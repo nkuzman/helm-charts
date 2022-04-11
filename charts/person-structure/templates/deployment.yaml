@@ -24,7 +24,7 @@ spec:
         {{- include "person-structure.selectorLabels" . | nindent 8 }}
     spec:
       {{- if not .Values.imagePullSecrets }}
-      {{ fail "Image pull secret not specified, please specify at least one in .Values.imagePullSecrets" }}
+      {{ fail "Image pull secret not specified, please specify at least one in imagePullSecrets" }}
       {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -52,39 +52,50 @@ spec:
             - name: SERVER_PORT
               value: "8443"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://{{- required "Please specify DB host name in .Values.datasource.host" .Values.datasource.host -}}:
-              {{- required "Please specify DB port in .Values.datasource.port" .Values.datasource.port -}}/
-              {{- required "Please specify database name in .Values.datasource.dbName" .Values.datasource.dbName -}}"
+              value: "jdbc:postgresql://{{- required "Please specify DB host name in datasource.host" .Values.datasource.host -}}:
+              {{- required "Please specify DB port in datasource.port" .Values.datasource.port -}}/
+              {{- required "Please specify database name in datasource.dbName" .Values.datasource.dbName -}}"
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ required "Please specify DB user in .Values.datasource.user" .Values.datasource.user | quote }}
+              value: {{ required "Please specify DB user in datasource.user" .Values.datasource.user | quote }}
             - name: SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA
-              value: {{ required "Please specify DB schema in .Values.datasource.schema"  .Values.datasource.schema | quote }}
+              value: {{ required "Please specify DB schema in datasource.schema"  .Values.datasource.schema | quote }}
             - name: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
               value: {{ .Values.kafka.saslMechanism | quote }}
             - name: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
               value: >-
                 org.apache.kafka.common.security.plain.PlainLoginModule required username=
-                {{- required "Please specify Kafka user in .Values.kafka.user" .Values.kafka.user | quote }} password="${kafka.password}";
+                {{- required "Please specify Kafka user in kafka.user" .Values.kafka.user | quote }} password="${kafka.password}";
             - name: SPRING_KAFKA_PROPERTIES_BOOTSTRAP_SERVERS
-              value: {{ required "Please specify Kafka bootstrap servers in .Values.kafka.servers" .Values.kafka.servers | quote }}
+              value: {{ required "Please specify Kafka bootstrap servers in kafka.servers" .Values.kafka.servers | quote }}
             - name: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
               value: {{ .Values.kafka.securityProtocol | quote }}
+            - name: SPRING_KAFKA_PROPERTIES_BASIC_AUTH_CREDENTIALS_SOURCE
+              value: {{ .Values.kafka.schemaRegistry.credSource | quote }}
+            - name: SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO
+              value: >-
+                {{ required "Please specify Kafka Schema Registry user in kafka.schemaRegistry.user" .Values.kafka.schemaRegistry.user }}:"${kafka.schemaRegistry.password}"
+            - name: SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_URL
+              value: {{ required "Please specify Kafka Schema Registry URL in kafka.schemaRegistry.url" .Values.kafka.schemaRegistry.url | quote }}
             - name: KAFKA_TOPIC_CARD_NAME
               value: {{ .Values.kafka.topics.card.name | quote }}
             - name: KAFKA_TOPIC_CRDACC_NAME
               value: {{ .Values.kafka.topics.crdacc.name | quote }}
-            - name: KAFKA_TOPIC_PERSONSTRUCTURE_NAME
-              value: {{ .Values.kafka.topics.personstructure.name | quote }}
-            - name: KAFKA_TOPIC_PAYMENTORDERCHECKS_NAME
-              value: {{ .Values.kafka.topics.paymentorderchecks.name | quote }}
+            - name: KAFKA_TOPIC_CUSTCRDINTACC_NAME
+              value: {{ .Values.kafka.topics.custcrdintacc.name | quote }}
+            - name: KAFKA_TOPIC_CUSTOMERACCOUNT_NAME
+              value: {{ .Values.kafka.topics.customeraccount.name | quote }}
+            - name: KAFKA_TOPIC_AUTHPTRAGRMTLIMALC_NAME
+              value: {{ .Values.kafka.topics.authptragrmtlimalc.name | quote }}
             - name: KAFKA_CONSUMER_GROUP_CARD_NAME
               value: {{ .Values.kafka.topics.card.consumerGroup | quote }}
             - name: KAFKA_CONSUMER_GROUP_CRDACC_NAME
               value: {{ .Values.kafka.topics.crdacc.consumerGroup | quote }}
-            - name: KAFKA_CONSUMER_GROUP_PERSONSTRUCTURE_NAME
-              value: {{ .Values.kafka.topics.personstructure.consumerGroup | quote }}
-            - name: KAFKA_CONSUMER_GROUP_PAYMENTORDERCHECKS_NAME
-              value: {{ .Values.kafka.topics.paymentorderchecks.consumerGroup | quote }}
+            - name: KAFKA_CONSUMER_GROUP_CUSTCRDINTACC_NAME
+              value: {{ .Values.kafka.topics.custcrdintacc.consumerGroup | quote }}
+            - name: KAFKA_CONSUMER_GROUP_CUSTOMERACCOUNT_NAME
+              value: {{ .Values.kafka.topics.customeraccount.consumerGroup | quote }}
+            - name: KAFKA_CONSUMER_GROUP_AUTHPTRAGRMTLIMALC_NAME
+              value: {{ .Values.kafka.topics.authptragrmtlimalc.consumerGroup | quote }}
             - name: SERVER_SSL_KEYSTORE
               value: /tmp/tls.p12
             - name: SERVER_SSL_KEYSTORETYPE

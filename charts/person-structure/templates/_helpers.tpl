@@ -51,30 +51,30 @@ Volumes
 - name: {{ include "person-structure.name" . }}-configmap
   configMap:
     name: {{ include "person-structure.name" . }}-configmap
-- name: truststore
-{{- if .Values.mountTrustStoreFromSecret.enabled }}
+- name: keystore
+{{- if .Values.mountKeyStoreFromSecret.enabled }}
   secret:
-    secretName: {{ .Values.mountTrustStoreFromSecret.secretName }}
-{{- if and .Values.mountTrustStoreFromSecret.certPath .Values.mountTrustStoreFromSecret.keyPath }}
+    secretName: {{ .Values.mountKeyStoreFromSecret.secretName }}
+{{- if and .Values.mountKeyStoreFromSecret.certPath .Values.mountKeyStoreFromSecret.keyPath }}
     items:
-      - path: {{ .Values.mountTrustStoreFromSecret.certPath }}
-        key: {{ .Values.mountTrustStoreFromSecret.certPath }}
-      - path: {{ .Values.mountTrustStoreFromSecret.keyPath }}
-        key: {{ .Values.mountTrustStoreFromSecret.keyPath }}
+      - path: {{ .Values.mountKeyStoreFromSecret.certPath }}
+        key: {{ .Values.mountKeyStoreFromSecret.certPath }}
+      - path: {{ .Values.mountKeyStoreFromSecret.keyPath }}
+        key: {{ .Values.mountKeyStoreFromSecret.keyPath }}
 {{- end }}
 {{- else }}
   emptyDir:
     medium: "Memory"
 {{- end }}
-{{- if .Values.mountKeyStoreFromSecret.enabled }}
-- name: keystore
+{{- if .Values.mountTrustStoreFromSecret.enabled }}
+- name: truststore
   secret:
-    secretName: {{ .Values.mountKeyStoreFromSecret.secretName }}
+    secretName: {{ .Values.mountTrustStoreFromSecret.secretName }}
 {{- end }}
-{{- if .Values.mountKeyStoreFromSecret.path }}
+{{- if .Values.mountTrustStoreFromSecret.path }}
     items:
-      - path: {{ .Values.mountKeyStoreFromSecret.path }}
-        key: {{ .Values.mountKeyStoreFromSecret.path }}
+      - path: {{ .Values.mountTrustStoreFromSecret.path }}
+        key: {{ .Values.mountTrustStoreFromSecret.path }}
 {{- end }}
 {{- if and .Values.logger.logDirMount.enabled .Values.logger.logDirMount.spec }}
 - name: logdir
@@ -94,25 +94,25 @@ Mounts for person-structure application
   name: {{ include "person-structure.name" . }}-secret
 - mountPath: /usr/app/config
   name: {{ include "person-structure.name" . }}-configmap
-{{- if .Values.mountTrustStoreFromSecret.enabled }}
+{{- if .Values.mountKeyStoreFromSecret.enabled }}
 - mountPath: /mnt/k8s/tls-server/key.pem
-  name: truststore
-{{- if .Values.mountTrustStoreFromSecret.keyPath }}
-  subPath: {{ .Values.mountTrustStoreFromSecret.keyPath }}
+  name: keystore
+{{- if .Values.mountKeyStoreFromSecret.keyPath }}
+  subPath: {{ .Values.mountKeyStoreFromSecret.keyPath }}
 {{- end }}
 - mountPath: /mnt/k8s/tls-server/cert.pem
-  name: truststore
-{{- if .Values.mountTrustStoreFromSecret.certPath }}
-  subPath: {{ .Values.mountTrustStoreFromSecret.certPath }}
+  name: keystore
+{{- if .Values.mountKeyStoreFromSecret.certPath }}
+  subPath: {{ .Values.mountKeyStoreFromSecret.certPath }}
 {{- end }}
 {{/* else if initcontainer TODO */}}
 {{- else }}
 - mountPath: /mnt/k8s/tls-server
-  name: truststore
-{{- end }}
-{{- if .Values.mountKeyStoreFromSecret.enabled }}
-- mountPath: {{ .Values.mountKeyStoreFromSecret.location }}
   name: keystore
+{{- end }}
+{{- if .Values.mountTrustStoreFromSecret.enabled }}
+- mountPath: {{ .Values.mountTrustStoreFromSecret.location }}
+  name: truststore
 {{- end }}
 {{- if and .Values.logger.logDirMount.enabled .Values.logger.logDirMount.spec }}
 - mountPath: {{ .Values.logger.logDir }}
