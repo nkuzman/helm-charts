@@ -45,8 +45,8 @@ spec:
             - mountPath: /liquibase/changelog
               name: liquibase-config
           command:
-            - bash
-            - -c
+            - --changeLogFile=changelog.yaml
+            - --defaultsFile=/liquibase/changelog/liquibase.properties
             - update
         {{- with .Values.initContainers }}
         {{- toYaml . | nindent 8 }}
