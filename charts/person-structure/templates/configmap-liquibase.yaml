@@ -4,6 +4,6 @@ metadata:
   name: {{ .Release.Name }}-liquibase-configmap
 data:
   changelog.yaml: |-
-    {{- include "person-structure.changelog" . | nindent 4 }}
+    {{ include "person-structure.changelog" . | nindent 4 }}
   liquibase.properties: |-
-    {{- include "person-structure.liquibase-config" . | nindent 4 }}
+    {{ include "person-structure.liquibase-config" . | nindent 4 }}
