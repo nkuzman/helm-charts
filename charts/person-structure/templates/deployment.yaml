@@ -44,6 +44,10 @@ spec:
           volumeMounts:
             - mountPath: /liquibase/changelog
               name: liquibase-config
+          command:
+            - bash
+            - -c
+            - update
         {{- with .Values.initContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
