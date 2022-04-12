@@ -49,7 +49,7 @@ spec:
           command:
             - bash
             - -c
-            - "/liquibase/docker-entrypoint.sh --changeLogFile=changelog.yaml --defaultsFile=/liquibase/changelog/liquibase.properties update"
+            - "/liquibase/docker-entrypoint.sh --changeLogFile=/liquibase/changelog/changelog.yaml --defaultsFile=/liquibase/changelog/liquibase.properties update"
         {{- with .Values.initContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
