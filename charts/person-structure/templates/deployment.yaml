@@ -47,7 +47,9 @@ spec:
             - mountPath: /liquibase/changelog
               name: liquibase-config
           command:
-            - update
+            - bash
+            - -c
+            - "/liquibase/docker-entrypoint.sh update"
         {{- with .Values.initContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
