@@ -1172,3 +1172,8 @@ databaseChangeLog:
     author: vu00235 (Marija Ljubic)
     changes:
     - sql: GRANT USAGE ON SCHEMA {{ .Values.datasource.schema | lower }} TO HP_USERS_GROUP, HP_ADMINS_GROUP, HP_SYSTEM_USERS_GROUP, HP_REPLICATION_GROUP;
+- changeSet:
+    id:  "{{ .Values.datasource.schema | lower }}_insert_data_into_crdintacc_type"
+    author: vu00311 (Neven Kuzman)
+    changes:
+    - sql: INSERT INTO {{ .Values.datasource.schema | lower }}.CRDINTACC_TYPE (crd_typ_id,intacc_typ_name,intacc_typ_name_sc,acc_cur_id,ext_acc_cur_id,customer_flag,billing_code,scor_flag,max_no_cardholder,sync_cycle_flag,intacc_typ_status,ext_acc_type,cobaff_flag,date_from,date_until,member_sign,user_lock,bill_exchrate_flag,ext_account,membership_calcfee,org_uni_id,prepaid_flag,param_schema_sync,max_rev_amo_flag,business_neg_flag,maxexp_cus_flag,iss_pro_typ_id,intacc_typ_code,order_no,bundle_def_acc_flag,reloadability_flag,stmt_production,comp_ncard_length,cf_limit_mandatory,efflim_acc_lev_exp_flag,min_ndl_amount,tolerance_day,ban_pro_typ_id,acc_membfee_balance_check_flag,expected_perm_blockage_period,acc_bill_trx_amount_src) VALUES (987654321,'Neven test','Neven test',64999,64999,'P','P ','O',null,'0','0','CUSACC','0','2018-09-10','9999-12-31','CU  ','2018-09-10 12:00:00',null,null,'1',null,null,'0','0','X','0',1796,'01',10,null,'R','2',null,'0','0',null,null,1796,'1',null,null);
