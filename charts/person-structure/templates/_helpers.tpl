@@ -51,6 +51,9 @@ Volumes
 - name: {{ include "person-structure.name" . }}-configmap
   configMap:
     name: {{ include "person-structure.name" . }}-configmap
+- name: liquibase-config
+  configMap:
+    name: {{ include "person-structure.name" . }}-liquibase-configmap
 - name: keystore
 {{- if .Values.mountKeyStoreFromSecret.enabled }}
   secret:
@@ -132,4 +135,18 @@ Application logger
 */}}
 {{- define "person-structure.logger" -}}
 {{ tpl (.Files.Get "config/log4j2.xml") . }}
+{{- end }}
+
+{{/*
+Liquibase changelog
+*/}}
+{{- define "person-structure.changelog" -}}
+{{ tpl (.Files.Get "config/liquibase/db.changelog-master.yaml") . }}
+{{- end }}
+
+{{/*
+Liquibase changelog
+*/}}
+{{- define "person-structure.liquibase-config" -}}
+{{ tpl (.Files.Get "config/liquibase/liquibase.properties") . }}
 {{- end }}

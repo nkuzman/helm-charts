@@ -86,6 +86,7 @@ secret:
   datasourcePassword: ""
   kafkaPassword: ""
   kafkaSchemaRegistryPassword: ""
+  liquibasePassword: "" # plaintext!
 
 logger:
   logToFile: false
@@ -152,6 +153,7 @@ datasource:
   port: ""
   dbName: ""
   user: ""
+  liquibaseUser: ""
   schema: ""
   connTimeout: 60000
   maxPoolSize: 2
