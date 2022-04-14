@@ -64,6 +64,16 @@ entries:
   person-structure:
   - apiVersion: v2
     appVersion: 1.1.2
+    created: "2022-04-14T14:31:51.335245261Z"
+    description: Helm chart for person structure application
+    digest: c2429a032939f9af731d384b94c78701349f559817c03e0ae0bdbbd8a47b36cf
+    name: person-structure
+    type: application
+    urls:
+    - https://github.com/nkuzman/helm-charts/releases/download/person-structure-0.2.24/person-structure-0.2.24.tgz
+    version: 0.2.24
+  - apiVersion: v2
+    appVersion: 1.1.2
     created: "2022-04-12T14:05:54.730474178Z"
     description: Helm chart for person structure application
     digest: 03fc360de15065b28771980e90f09a3fe66b557ade41881484fc12a153bc2cba
@@ -382,4 +392,4 @@ entries:
     urls:
     - https://github.com/nkuzman/helm-charts/releases/download/person-structure-0.0.1/person-structure-0.0.1.tgz
     version: 0.0.1
-generated: "2022-04-12T14:05:54.730802478Z"
+generated: "2022-04-14T14:31:51.336008763Z"
