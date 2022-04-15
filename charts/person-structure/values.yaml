@@ -86,7 +86,7 @@ secret:
   datasourcePassword: ""
   kafkaPassword: ""
   kafkaSchemaRegistryPassword: ""
-  liquibasePassword: "" # plaintext!
+  liquibasePassword: "" # b64 encoded
 
 logger:
   logToFile: false
