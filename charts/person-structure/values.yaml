@@ -187,17 +187,23 @@ kafka:
 
 javaOpts: "-Xms256M -Xmx256M"
 
-mountKeyStoreFromSecret:
+mountServerCertFromSecret:
   enabled: false
   secretName: ""
   certPath: ""
   keyPath: ""
 
+mountKeyStoreFromSecret:
+  enabled: false
+  secretName: ""
+  location: ""
+  keyStoreName: ""
+
 mountTrustStoreFromSecret:
   enabled: false
   secretName: ""
   location: ""
-  path: ""
+  trustStoreName: ""
 
 customVolumes: []
 
