@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+nameOverride: ""
 
 image:
   repository: docker.io/hrvestigo/person-structure-ms
@@ -11,7 +11,71 @@ image:
   tag: ""
 
 imagePullSecrets: []
-nameOverride: ""
+
+datasource:
+  host: ""
+  port: ""
+  dbName: ""
+  user: ""
+  liquibaseUser: ""
+  schema: ""
+  connTimeout: 60000
+  maxPoolSize: 2
+  minIdle: 0
+
+kafka:
+  user: ""
+  servers: ""
+  saslMechanism: PLAIN
+  securityProtocol: SASL_SSL
+  schemaRegistry:
+    credSource: USER_INFO
+    user: ""
+    url: ""
+  topics:
+    card:
+      name: hr.vestigo.hp.card
+      consumerGroup: hr.vestigo.hp.card
+    crdacc:
+      name: hr.vestigo.hp.crdacc
+      consumerGroup: hr.vestigo.hp.crdacc
+    custcrdintacc:
+      name: hr.vestigo.hp.custcrdintacc
+      consumerGroup: hr.vestigo.hp.custcrdintacc
+    customeraccount:
+      name: hr.vestigo.hp.customeraccount
+      consumerGroup: hr.vestigo.hp.customeraccount
+    authptragrmtlimalc:
+      name: hr.vestigo.hp.authptragrmtlimalc
+      consumerGroup: hr.vestigo.hp.authptragrmtlimalc
+
+timezone: ""
+
+secret:
+  decryptionKey: ""
+  datasourcePassword: ""
+  kafkaPassword: ""
+  kafkaSchemaRegistryPassword: ""
+  liquibasePassword: "" # b64 encoded
+
+logger:
+  logToFile: false
+  rollingFileAppender: false
+  logDir: "/var/log/app"
+  logDirMount:
+    enabled: false
+    # spec:
+      # emptyDir: {}
+      # flexVolume:
+        # driver: ""
+        # fsType: ""
+        # options:
+          # basepath: ""
+          # basename: ""
+
+healthStatusDownReturnCode: "418"
+
+javaOpts: "-Xms256M -Xmx256M"
 
 podAnnotations: {}
 
@@ -43,13 +107,6 @@ resources:
 
 initContainers: []
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
 nodeSelector: {}
 
 tolerations: []
@@ -79,31 +136,8 @@ affinity:
                   - person-structure
           topologyKey: kubernetes.io/hostname
 
-timezone: ""
-
-secret:
-  decryptionKey: ""
-  datasourcePassword: ""
-  kafkaPassword: ""
-  kafkaSchemaRegistryPassword: ""
-  liquibasePassword: "" # b64 encoded
-
-logger:
-  logToFile: false
-  rollingFileAppender: false
-  logDir: "/var/log/app"
-  logDirMount:
-    enabled: false
-    # spec:
-      # emptyDir: {}
-      # flexVolume:
-        # driver: ""
-        # fsType: ""
-        # options:
-          # basepath: ""
-          # basename: ""
-
 deployment:
+  replicaCount: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -146,46 +180,12 @@ deployment:
         - name: Host
           value: localhost
 
-healthStatusDownReturnCode: "418"
-
-datasource:
-  host: ""
-  port: ""
-  dbName: ""
-  user: ""
-  liquibaseUser: ""
-  schema: ""
-  connTimeout: 60000
-  maxPoolSize: 2
-  minIdle: 0
-
-kafka:
-  user: ""
-  servers: ""
-  saslMechanism: PLAIN
-  securityProtocol: SASL_SSL
-  schemaRegistry:
-    credSource: USER_INFO
-    user: ""
-    url: ""
-  topics:
-    card:
-      name: hr.vestigo.hp.card
-      consumerGroup: hr.vestigo.hp.card
-    crdacc:
-      name: hr.vestigo.hp.crdacc
-      consumerGroup: hr.vestigo.hp.crdacc
-    custcrdintacc:
-      name: hr.vestigo.hp.custcrdintacc
-      consumerGroup: hr.vestigo.hp.custcrdintacc
-    customeraccount:
-      name: hr.vestigo.hp.customeraccount
-      consumerGroup: hr.vestigo.hp.customeraccount
-    authptragrmtlimalc:
-      name: hr.vestigo.hp.authptragrmtlimalc
-      consumerGroup: hr.vestigo.hp.authptragrmtlimalc
-
-javaOpts: "-Xms256M -Xmx256M"
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
 
 mountServerCertFromSecret:
   enabled: false

@@ -2,17 +2,18 @@
 
 ## Purpose
 
-**TODO** dodati opis
+This Helm chart installs Person structure application into your Kubernetes cluster.
 
-## Default Installation
-
-This Helm chart installs Person structure into your Kubernetes cluster.
-
-Helm release name set during installation will be used for naming all resources created by this Helm chart. For example, if Chart is installed with name "my-chart", deployment name will have "my-chart" prefix, as well as all configmaps, secrets and other resources created by this chart.
+Helm release name set during installation will be used for naming all resources created by this Helm chart.
+For example, if Chart is installed with name "my-chart", deployment name will have "my-chart" prefix, as well as all configmaps, secrets and other resources created by this chart.
+It is possible to override this behavior and to set custom name for resources using attribute `nameOverride` in custom values file.
+If this attribute is set, it's value will be used to name all the resources, and release name will be ignored.
 
 It is not possible to install application using default values only, there is a list of required attributes which should be applied when installing Person structure.
 
-Required attributes should be defined in custom `values.yaml` file or propagated with `--set key=value` command during CLI installation, for example:
+## Required setup
+
+Required attributes should be defined in custom values file in `yaml` format (recommended) or propagated with `--set key=value` command during CLI installation, for example:
 
 `helm upgrade --install person-structure vestigo/person-structure -f my-values.yaml` or
 
@@ -83,9 +84,9 @@ secret:
   liquibasePassword: "S0m3H4sh" # base64 encoded password for Liquibase user defined in datasource.liquibaseUser attribute
 ```
 
-### Kafka connection setup
+### Kafka setup
 
-Person structure uses Kafka as event stream provider.
+Person structure uses Kafka as event stream backend.
 Other than Kafka cluster itself, Person structure application also uses Kafka Schema Registry, which setup also has to be provided in order to establish required connection.
 
 To connect to Kafka cluster, several attributes have to be defined in values file.
@@ -93,116 +94,96 @@ All attributes under `kafka` parent attribute are required:
 
 ```yaml
 kafka:
-  user: "kafka-user" # string value
-  servers: "kafka-server:port" # string value
+  user: "kafka-user" # user used to connect to Kafka cluster
+  servers: "kafka-server1:port,kafka-server2:port" # a comma separated list of Kafka bootstrap servers
   schemaRegistry:
-    user: "kafka-schema-registry-user" # string value
-    url: "kafka-schema-registry-url" # string value
+    user: "kafka-schema-registry-user" # user used to connect to Kafka Schema Registry
+    url: "https://kafka.schema.registry.url" # URL for Kafka Schema Registry
 ```
 
-## Custom installation
-
-Besides required attributes, installation of Person structure can be customized in different ways.
-
-### Adding custom environment variables
-
-Custom environment variables can be added to person-structure container by applying `customEnv` value, for example:
+As for database, passwords for Kafka cluster and Kafka Schema Registry are also AES encrypted.
+Passwords should be defined with `secret.kafkaPassword` and `secret.kafkaSchemaRegistryPassword` attributes, for example:
 
 ```yaml
-customEnv:
-  - name: MY_CUSTOM_ENV
-    value: some-value 
-  - name: SOME_OTHER_ENV
-    value: 123
+secret:
+  decryptionKey: "my-encryption-key" # some custom encryption key
+  kafkaPassword: "{AES}S0m3H4sh" # AES encrypted password for Kafka cluster user defined in kafka.user, encrypted with custom encryption key
+  kafkaSchemaRegistryPassword: "{AES}S0m30th3rH4sh" # AES encrypted password for Kafka Schema Registry user defined in kafka.schemaRegistry.user, encrypted with custom encryption key
 ```
 
-**TODO:** nastavak
+Note that same `secret` attribute is used for both datasource and Kafka, so the same encryption/decryption key is used for encrypting passwords for both backends.
 
-### Adding custom mounts
-
-Values file can be used to specify additional custom `volume` and `volumeMounts` to be added to person-structure container.
-
-For example, custom volume mount could be added by defining this setup:
+Default Kafka cluster and Kafka Schema registry connection type used by Person structure is Basic auth (username and password).
+If different connection type should be used, it's possible to override default setup by changing following attributes:
 
 ```yaml
-customVolumes:
-  - name: my-custom-volume # has to match name in initContainer and volumeMount in person-structure container
-    emptyDir: # any other volume type is OK
-      medium: "Memory"
-
-customMounts:
-  - name: my-custom-volume # has to match name in initContainer and volumeMount in person-structure container
-    mountPath: /some/mount/path # this path should be used for custom environment variables
+kafka:
+  saslMechanism: PLAIN # default value, set custom mechanism if required
+  securityProtocol: SASL_SSL # default value, set custom protocol if required
 ```
 
-### Customizing container logs
+#### Topics and consumer groups setup
 
-Person structure application is predefined to redirect all logs to `stdout` expect for Web Server logs (`access.log`) and health check logs, which are not logged by default.
-However, using custom configuration, logs can be redirected to log files also (in addition to `stdout`).
-
-When enabling logging to file, container will divide logs into four different files:
-
-* `application.log` - contains all application-related (business logic) logs
-  
-* `messages.log` - contains application server's logs
-
-* `health.log` - contains all incoming requests to health check endpoint (filtered out from `access.log`)
-
-* `access.log` - contains typical Web Server logs, except for health check endpoint
-
-To enable logging to file, following attribute should be set in values file:
+Kafka topics and consumer group names used by Person structure have default names defined in `values.yaml` file, but can be overridden with following setup:
 
 ```yaml
-logger:
-  logToFile: true # boolean value, default is false
+kafka:
+  topics:
+    card:
+      name: hr.vestigo.hp.card # default value, set custom name if required
+      consumerGroup: hr.vestigo.hp.card # default value, set custom name if required
+    crdacc:
+      name: hr.vestigo.hp.crdacc # default value, set custom name if required
+      consumerGroup: hr.vestigo.hp.crdacc # default value, set custom name if required
+    custcrdintacc:
+      name: hr.vestigo.hp.custcrdintacc # default value, set custom name if required
+      consumerGroup: hr.vestigo.hp.custcrdintacc # default value, set custom name if required
+    customeraccount:
+      name: hr.vestigo.hp.customeraccount # default value, set custom name if required
+      consumerGroup: hr.vestigo.hp.customeraccount # default value, set custom name if required
+    authptragrmtlimalc:
+      name: hr.vestigo.hp.authptragrmtlimalc # default value, set custom name if required
+      consumerGroup: hr.vestigo.hp.authptragrmtlimalc # default value, set custom name if required
 ```
 
-With this basic setup, container will start to log files into a predefined "/var/log/app" location with basic file appender.
-In order to set custom log location or to enable rolling file appender, two additional attributes have to be defined:
+### Configuring image source and pull secrets
+
+By default, Person structure image is pulled directly from Vestigo's registry on Docker Hub.
+If mirror registry is used for example, image source can be modified using following attributes:
 
 ```yaml
-logger:
-  logToFile: true # boolean value, default is false
-  rollingFileAppender: true # boolean value, default is false
-  logDir: "/custom/log/folder"
+image:
+  repository: custom.url/custom-image-name
 ```
 
-When defining custom log location, make sure folder either already exists in container or is mounted with `logDirMount` variable, for example:
+Default pull policy is set to `IfNotPresent` but can also be modified, for example:
 
 ```yaml
-logger:
-  logToFile: true # boolean value, default is false
-  rollingFileAppender: true # boolean value, default is false
-  logDir: "/custom/log/folder"
-    enabled: true # boolean value, default is false
-    spec:
-      emptyDir: {} # defines mount type, other types can be used also
+image:
+  pullPolicy: Always
 ```
 
-or with other mount type:
+Image tag is normally read from Chart definition, but if required, it can be overridden with attribute `image.tag`, for example:
 
 ```yaml
-logger:
-  logToFile: true # boolean value, default is false
-  rollingFileAppender: true # boolean value, default is false
-  logDir: "/custom/log/folder"
-    enabled: true # boolean value, default is false
-    spec:
-      flexVolume:
-        driver: "volume-driver"
-        fsType: "bind"
-        options:
-          basepath: "/host/path"
-          basename: "nope"
-          uid: 1000
-          gid: 1000
+image:
+  tag: custom-tag
 ```
 
-Note that any type of mount specification can be used by following standard Kubernetes mount specification, the only requirement is that it has to be defined under `logger.logDir.spec` attribute in values file.
+Since image is located on Vestigo's private Docker Hub registry, pull secret is mandatory.
+Pull secret is not set by default, and it should be created prior to Person structure installation in target namespace.
+Secret should contain credentials provided by Vestigo.
+
+Once secret is created, it should be set with `imagePullSecrets.name` attribute, for example:
+
+```yaml
+imagePullSecrets:
+  - name: vestigo-dockerhub-secret
+```
 
 ### TLS setup
 
-Person structure application is prepared to use TLS with provided server certificate.
+Person structure application is prepared to use TLS, but requires provided server certificate.
 Server certificate is not provided by default (expected to be provided manually) and there are no predefined trust or key stores for TLS/mTLS.
 However, there are several different possibilities for customizing TLS setup.
 
@@ -401,3 +382,377 @@ Any location is fine, as long as it doesn't override any existing container path
 Those two parameters are joined together to form an absolute path to key store file.
 
 When using secret to mount key store, no additional custom setup is required.
+
+## Customizing installation
+
+Besides required attributes, installation of Person structure can be customized in different ways.
+
+### Adding custom environment variables
+
+Custom environment variables can be added to person-structure container by applying `customEnv` value, for example:
+
+```yaml
+customEnv:
+  - name: MY_CUSTOM_ENV
+    value: some-value 
+  - name: SOME_OTHER_ENV
+    value: 123
+```
+
+### Adding custom mounts
+
+Values file can be used to specify additional custom `volume` and `volumeMounts` to be added to person-structure container.
+
+For example, custom volume mount could be added by defining this setup:
+
+```yaml
+customVolumes:
+  - name: my-custom-volume # has to match name in initContainer and volumeMount in person-structure container
+    emptyDir: # any other volume type is OK
+      medium: "Memory"
+
+customMounts:
+  - name: my-custom-volume # has to match name in initContainer and volumeMount in person-structure container
+    mountPath: /some/mount/path # this path should be used for custom environment variables
+```
+
+### Customizing container logs
+
+Person structure application is predefined to redirect all logs to `stdout` expect for Web Server logs (`access.log`) and health check logs, which are not logged by default.
+However, using custom configuration, logs can be redirected to log files also (in addition to `stdout`).
+
+When enabling logging to file, container will divide logs into four different files:
+
+* `application.log` - contains all application-related (business logic) logs
+  
+* `messages.log` - contains application server's logs
+
+* `health.log` - contains all incoming requests to health check endpoint (filtered out from `access.log`)
+
+* `access.log` - contains typical Web Server logs, except for health check endpoint
+
+To enable logging to file, following attribute should be set in values file:
+
+```yaml
+logger:
+  logToFile: true # boolean value, default is false
+```
+
+With this basic setup, container will start to log files into a predefined "/var/log/app" location with basic file appender.
+In order to set custom log location or to enable rolling file appender, two additional attributes have to be defined:
+
+```yaml
+logger:
+  logToFile: true # boolean value, default is false
+  rollingFileAppender: true # boolean value, default is false
+  logDir: "/custom/log/folder"
+```
+
+When defining custom log location, make sure folder either already exists in container or is mounted with `logDirMount` variable, for example:
+
+```yaml
+logger:
+  logToFile: true # boolean value, default is false
+  rollingFileAppender: true # boolean value, default is false
+  logDir: "/custom/log/folder"
+    enabled: true # boolean value, default is false
+    spec:
+      emptyDir: {} # defines mount type, other types can be used also
+```
+
+or with other mount type:
+
+```yaml
+logger:
+  logToFile: true # boolean value, default is false
+  rollingFileAppender: true # boolean value, default is false
+  logDir: "/custom/log/folder"
+    enabled: true # boolean value, default is false
+    spec:
+      flexVolume:
+        driver: "volume-driver"
+        fsType: "bind"
+        options:
+          basepath: "/host/path"
+          basename: "nope"
+          uid: 1000
+          gid: 1000
+```
+
+Note that any type of mount specification can be used by following standard Kubernetes mount specification, the only requirement is that it has to be defined under `logger.logDir.spec` attribute in values file.
+
+### Modifying deployment strategy
+
+Default deployment strategy for Person structure application is `RollingUpdate`, but it can be overridden, along with other deployment parameters using following attributes (default values are shown):
+
+```yaml
+deployment:
+  replicaCount: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 60
+  terminationGracePeriodSeconds: 60
+  restartPolicy: Always
+```
+
+By default, one replica of Person structure is installed on Kubernetes cluster. Number of replicas can be statically modified with above configuration, or `HorizontalPodAutoscaler` option can be used to let Kubernetes automatically scale application when required.
+
+#### Customizing pod resource requests and limits
+
+Following are the default values for Person structure requests and limits:
+
+```yaml
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+```
+
+Any value (or all of them) can be modified by specifying same attribute in custom values file to any other value.
+
+#### Using `HorizontalPodAutoscaler`
+
+By default, autoscaler is disabled in configuration, but it can enabled by using following setup:
+
+```yaml
+autoscaling:
+  enabled: true # default is false, has to be set to true to enable HPA
+  minReplicas: 1 # default value
+  maxReplicas: 10 # default value
+  targetCPUUtilizationPercentage: 80 # default value
+  targetMemoryUtilizationPercentage: 80 # not used by default
+```
+
+CPU and/or memory utilization metrics can be used to autoscale Person structure pod.
+It's possible to define one or both of those metrics.
+If only `autoscaling.enabled` attribute is set to `true`, without setting other attributes, only CPU utilization metric will be used with percentage set to 80.
+
+### Customizing probes
+
+Person structure application has predefined health check probes (readiness and liveness).
+Following are the default values:
+
+```yaml
+deployment:
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    timeoutSeconds: 181
+    successThreshold: 1
+    failureThreshold: 2
+    httpGet:
+      path: /health/readiness?__cbhck=Health/k8s
+      port: http
+      scheme: HTTPS
+      httpHeaders:
+        - name: Content-Type
+          value: application/json
+        - name: User-Agent
+          value: Health/k8s
+        - name: Host
+          value: localhost
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    timeoutSeconds: 10
+    failureThreshold: 3
+    httpGet:
+      path: /health/liveness?__cbhck=Health/k8s
+      port: http
+      scheme: HTTPS
+      httpHeaders:
+        - name: Content-Type
+          value: application/json
+        - name: User-Agent
+          value: Health/k8s
+        - name: Host
+          value: localhost
+```
+
+Probes can be modified with different custom attributes simply by setting a different `deployment.readinessProbe` or `deployment.livenessProbe` value structure.
+
+For example, this setup would remove `httpHeaders` attributes from `livenessProbe` and remove query parameters from default `path`:
+
+```yaml
+deployment:
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    timeoutSeconds: 10
+    failureThreshold: 3
+    httpGet:
+      path: /health/liveness # do not modify base path
+      port: http # do not modify port name
+      scheme: HTTPS # do not modify scheme
+```
+
+Note that Person structure has health checks available within the `/health` endpoint (`/health/readiness` for readiness and `/health/liveness` for liveness), and this base paths should not modified, only query parameters are subject to change.
+`scheme` attribute should also be set to `HTTPS` at all times, as well as `http` value for `port` attribute.
+
+### Customizing security context
+
+Security context for Person structure can be set on pod and/or on container level.
+By default, pod security context is defined with following values:
+
+```yaml
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+```
+
+There is no default security context on container level, but it can be defined by setting `securityContext` attribute (opposed to `podSecurityContext`), for example:
+
+```yaml
+securityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+  runAsGroup: 0
+```
+
+Note that container level security context will be applied to both containers in Person structure pod (LiquiBase init container and Person structure container).
+
+### Customizing network setup
+
+When installing Person structure using default setup, a `Service` object will be created of `ClusterIP` type exposed on port 8443.
+Those values can be modified by setting following attributes in custom values file, for example:
+
+```yaml
+service:
+  type: NodePort
+  port: 10000
+```
+
+Ingress is not created by default, but can be enabled and customized by specifying following values:
+
+```yaml
+ingress:
+  enabled: true # default value is false, should be set to true to enable
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+```
+
+For example, a working setup could be defined like this:
+
+```yaml
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  hosts:
+    - host: person-structure.custom.url
+      paths:
+        - path: /
+          pathType: Prefix
+```
+
+### Adding custom init containers
+
+As already explained as one of the options when providing TLS certificates, there's a possibility to define a custom `initContainer`.
+This option is not limited to TLS setup only, but custom `initContainer` can be used for any purpose.
+
+Custom init container(s) can simply be added by defining their specification in `initContainers` attribute, for example:
+
+```yaml
+initContainers:
+  - name: custom-init-container
+    image: custom-init-container-image
+    command:
+      - bash
+      - -c
+      - "custom command"
+  - name: other-custom-init-container
+    image: other-custom-init-container-image
+    env:
+      - name: CUSTOM_ENV_VAR
+        value: custom value
+```
+
+Init container can have all standard Kubernetes attributes in its specification.
+
+### Customizing affinity rules, node selector and tolerations
+
+Person structure deployment has some predefined affinity rules, as listed below:
+
+```yaml
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+                - amd64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - person-structure
+          topologyKey: kubernetes.io/hostname
+```
+
+This affinity rules can be overridden through custom values file and set to any required value if necessary.
+
+There are no defaults for node selector or tolerations, but there is a possibility to define both by adding their specifications, for example:
+
+```yaml
+nodeSelector:
+  disktype: ssd
+
+tolerations:
+  - key: "custom-key"
+    operator: "Equal"
+    value: "custom-value"
+    effect: "NoExecute"
+    tolerationSeconds: 3600
+```
+
+### Additional custom configuration
+
+There are some other customizable attributes predefined in Person structure application.
+
+One of them is related to HTTP response code which is returned by application if health check fails.
+Default value for this attribute is 418 but it can be customized if necessary, for example:
+
+```yaml
+healthStatusDownReturnCode: "499" # default value is 418
+```
+
+There's a possibility to define a custom timezone (there is no default one), by simply defining following attribute:
+
+```yaml
+timezone: Europe/London
+```
+
+Finally, since Person structure is an Java application, there's a possibility to set custom JVM parameters.
+There is a predefined value which specifies `Xms` and `Xmx` JVM parameters:
+
+```yaml
+javaOpts: "-Xms256M -Xmx256M" # default value
+```
+
+This value can be changed by modifying existing parameters or adding custom, for example:
+
+```yaml
+javaOpts: "-Xms256M -Xmx512M -Dcustom.jvm.param=true"
+```
+
+Note that defining custom `javaOpts` attribute will override default one, so make sure to keep `Xms` and `Xmx` parameters.

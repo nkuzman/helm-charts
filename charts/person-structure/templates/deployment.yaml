@@ -6,7 +6,7 @@ metadata:
     {{- include "person-structure.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.deployment.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
@@ -39,8 +39,7 @@ spec:
       initContainers:
         - name: liquibase         
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
+            {{- toYaml .Values.securityContext | nindent 12 }}
           image: liquibase/liquibase:4.9.1
           imagePullPolicy: IfNotPresent
           volumeMounts:

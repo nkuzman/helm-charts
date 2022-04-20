@@ -54,6 +54,21 @@ Volumes
 - name: liquibase-config
   configMap:
     name: {{ include "person-structure.name" . }}-liquibase-configmap
+- name: server-cert
+{{- if .Values.mountServerCertFromSecret.enabled }}
+  secret:
+    secretName: {{ .Values.mountServerCertFromSecret.secretName }}
+{{- if and .Values.mountServerCertFromSecret.certPath .Values.mountServerCertFromSecret.keyPath }}
+    items:
+      - path: {{ .Values.mountServerCertFromSecret.certPath }}
+        key: {{ .Values.mountServerCertFromSecret.certPath }}
+      - path: {{ .Values.mountServerCertFromSecret.keyPath }}
+        key: {{ .Values.mountServerCertFromSecret.keyPath }}
+{{- end }}
+{{- else }}
+  emptyDir:
+    medium: "Memory"
+{{- end }}
 - name: keystore
 {{- if .Values.mountKeyStoreFromSecret.enabled }}
   secret:
@@ -65,19 +80,16 @@ Volumes
       - path: {{ .Values.mountKeyStoreFromSecret.keyPath }}
         key: {{ .Values.mountKeyStoreFromSecret.keyPath }}
 {{- end }}
-{{- else }}
-  emptyDir:
-    medium: "Memory"
 {{- end }}
 {{- if .Values.mountTrustStoreFromSecret.enabled }}
 - name: truststore
   secret:
     secretName: {{ .Values.mountTrustStoreFromSecret.secretName }}
 {{- end }}
-{{- if .Values.mountTrustStoreFromSecret.path }}
+{{- if .Values.mountTrustStoreFromSecret.trustStoreName }}
     items:
-      - path: {{ .Values.mountTrustStoreFromSecret.path }}
-        key: {{ .Values.mountTrustStoreFromSecret.path }}
+      - path: {{ .Values.mountTrustStoreFromSecret.trustStoreName }}
+        key: {{ .Values.mountTrustStoreFromSecret.trustStoreName }}
 {{- end }}
 {{- if and .Values.logger.logDirMount.enabled .Values.logger.logDirMount.spec }}
 - name: logdir
@@ -97,6 +109,21 @@ Mounts for person-structure application
   name: {{ include "person-structure.name" . }}-secret
 - mountPath: /usr/app/config
   name: {{ include "person-structure.name" . }}-configmap
+{{- if .Values.mountServerCertFromSecret.enabled }}
+- mountPath: /mnt/k8s/tls-server/key.pem
+  name: server-cert
+{{- if .Values.mountServerCertFromSecret.keyPath }}
+  subPath: {{ .Values.mountServerCertFromSecret.keyPath }}
+{{- end }}
+- mountPath: /mnt/k8s/tls-server/cert.pem
+  name: server-cert
+{{- if .Values.mountServerCertFromSecret.certPath }}
+  subPath: {{ .Values.mountServerCertFromSecret.certPath }}
+{{- end }}
+{{- else }}
+- mountPath: /mnt/k8s/tls-server
+  name: server-cert
+{{- end }}
 {{- if .Values.mountKeyStoreFromSecret.enabled }}
 - mountPath: /mnt/k8s/tls-server/key.pem
   name: keystore
