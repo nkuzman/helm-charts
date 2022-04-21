@@ -36,9 +36,9 @@ kafka:
     card:
       name: hr.vestigo.hp.card
       consumerGroup: hr.vestigo.hp.card
-    crdacc:
-      name: hr.vestigo.hp.crdacc
-      consumerGroup: hr.vestigo.hp.crdacc
+    crdintacc:
+      name: hr.vestigo.hp.crdintacc
+      consumerGroup: hr.vestigo.hp.crdintacc
     custcrdintacc:
       name: hr.vestigo.hp.custcrdintacc
       consumerGroup: hr.vestigo.hp.custcrdintacc
