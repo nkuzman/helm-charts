@@ -175,11 +175,19 @@ spec:
               value: {{ .Values.javaOpts | quote }}
             {{- if .Values.mountTrustStoreFromSecret.enabled }}
             - name: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
-              value: {{ .Values.mountTrustStoreFromSecret.location }}/{{ .Values.mountTrustStoreFromSecret.trustStoreName }}
+              value: {{ required "Please specify trust store location in mountTrustStoreFromSecret.location" .Values.mountTrustStoreFromSecret.location }}/{{ required "Please specify trust store file name in mountTrustStoreFromSecret.trustStoreName" .Values.mountTrustStoreFromSecret.trustStoreName }}
+            - name: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_TYPE
+              value: {{ required "Please specify trust store type in mountTrustStoreFromSecret.trustStoreType" .Values.mountTrustStoreFromSecret.trustStoreType }}
             - name: SSL_TRUST_STORE_FILE
               value: {{ .Values.mountTrustStoreFromSecret.location }}/{{ .Values.mountTrustStoreFromSecret.trustStoreName }}
             - name: JAVAX_NET_SSL_TRUST_STORE
               value: {{ .Values.mountTrustStoreFromSecret.location }}/{{ .Values.mountTrustStoreFromSecret.trustStoreName }}
+            {{- end }}
+            {{- if .Values.mountKeyStoreFromSecret.enabled }}
+            - name: SERVER_SSL_KEY_STORE_FILE
+              value: {{ required "Please specify key store location in mountKeyStoreFromSecret.location" .Values.mountKeyStoreFromSecret.location }}/{{ required "Please specify key store file name in mountKeyStoreFromSecret.keyStoreName" .Values.mountKeyStoreFromSecret.keyStoreName }}
+            - name: SSL_KEY_STORE_TYPE
+              value: {{ required "Please specify key store type in mountKeyStoreFromSecret.keyStoreType" .Values.mountKeyStoreFromSecret.keyStoreType }}
             {{- end }}
             {{- with .Values.customEnv }}
             {{- toYaml . | nindent 12 }}

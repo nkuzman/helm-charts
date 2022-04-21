@@ -18,10 +18,7 @@
     </Console>
 
     {{- if and .logToFile .rollingFileAppender }}
-    <Application
-      name="Application"
-      fileName="${folder}/${fileName}"
-      filePattern="${folder}/${fileName}-%d{MM-dd-yyyy}.log">
+    <RollingFile name="Application" fileName="${folder}/${fileName}" filePattern="${folder}/${fileName}-%d{MM-dd-yyyy}.log">
       <PatternLayout>
         <Pattern>${defaultPattern}</Pattern>
       </PatternLayout>
@@ -30,12 +27,9 @@
         <SizeBasedTriggeringPolicy size="100 MB"/>
       </Policies>
       <DefaultRolloverStrategy max="1000"/>
-    </Application>
+    </RollingFile>
 
-    <Application
-      name="Tomcat"
-      fileName="${folder}/${fileNameTomcat}"
-      filePattern="${folder}/${fileNameTomcat}-%d{MM-dd-yyyy}.log">
+    <RollingFile name="Tomcat" fileName="${folder}/${fileNameTomcat}" filePattern="${folder}/${fileNameTomcat}-%d{MM-dd-yyyy}.log">
       <PatternLayout>
         <Pattern>${defaultPattern}</Pattern>
       </PatternLayout>
@@ -44,12 +38,9 @@
         <SizeBasedTriggeringPolicy size="100 MB"/>
       </Policies>
       <DefaultRolloverStrategy max="1000"/>
-    </Application>
+    </RollingFile>
 
-    <Application
-      name="Health"
-      fileName="${folder}/${fileNameHealth}"
-      filePattern="${folder}/${fileNameHealth}-%d{MM-dd-yyyy}.log">
+    <RollingFile name="Health" fileName="${folder}/${fileNameHealth}" filePattern="${folder}/${fileNameHealth}-%d{MM-dd-yyyy}.log">
       <PatternLayout>
         <Pattern>${healthPattern}</Pattern>
       </PatternLayout>
@@ -58,7 +49,7 @@
         <SizeBasedTriggeringPolicy size="100 MB"/>
       </Policies>
       <DefaultRolloverStrategy max="1000"/>
-    </Application>
+    </RollingFile>
 
     {{- else if .logToFile }}
 

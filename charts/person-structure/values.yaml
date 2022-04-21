@@ -145,7 +145,7 @@ deployment:
       maxUnavailable: 0
   minReadySeconds: 60
   terminationGracePeriodSeconds: 60
-  restartPolicy: Always  
+  restartPolicy: Always
   readinessProbe:
     initialDelaySeconds: 10
     periodSeconds: 60
@@ -153,32 +153,18 @@ deployment:
     successThreshold: 1
     failureThreshold: 2
     httpGet:
-      path: /health/readiness?__cbhck=Health/k8s
+      path: /health/readiness
       port: http
       scheme: HTTPS
-      httpHeaders:
-        - name: Content-Type
-          value: application/json
-        - name: User-Agent
-          value: Health/k8s
-        - name: Host
-          value: localhost
   livenessProbe:
     initialDelaySeconds: 60
     periodSeconds: 60
     timeoutSeconds: 10
     failureThreshold: 3
     httpGet:
-      path: /health/liveness?__cbhck=Health/k8s
+      path: /health/liveness
       port: http
       scheme: HTTPS
-      httpHeaders:
-        - name: Content-Type
-          value: application/json
-        - name: User-Agent
-          value: Health/k8s
-        - name: Host
-          value: localhost
 
 autoscaling:
   enabled: false
@@ -198,12 +184,14 @@ mountKeyStoreFromSecret:
   secretName: ""
   location: ""
   keyStoreName: ""
+  keyStoreType: JKS
 
 mountTrustStoreFromSecret:
   enabled: false
   secretName: ""
   location: ""
   trustStoreName: ""
+  trustStoreType: JKS
 
 customVolumes: []
 

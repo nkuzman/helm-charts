@@ -187,11 +187,11 @@ Person structure application is prepared to use TLS, but requires provided serve
 Server certificate is not provided by default (expected to be provided manually) and there are no predefined trust or key stores for TLS/mTLS.
 However, there are several different possibilities for customizing TLS setup.
 
-#### Provide server certificate with custom initContainer
+#### Provide server certificate with custom `initContainer`
 
-Key store with custom server certificate can be provided by using custom initContainer.
-Main thing to keep in mind is that application expects that initContainer will output `cert.pem` and `key.pem` files to `volumeMount` with `server-cert` name.
-Application will take provided certificate and key files and generate key store from them.
+Key store with custom server certificate can be provided by using custom `initContainer`.
+Main thing to keep in mind is that application expects that `initContainer` will output `cert.pem` and `key.pem` files to `volumeMount` with name `server-cert`.
+Application will obtain generated certificate and key files via `server-cert` mount and generate server's key store from them.
 
 For example, init container could be defined like this:
 
@@ -230,13 +230,13 @@ mountServerCertFromSecret:
 
 In this case, Helm chart will take care of mounting certificate and key files to expected location, the only requirement is to set secret name and names of certificate and key files into values file.
 
-#### Provide trust store from custom initContainer
+#### Provide trust store from custom `initContainer`
 
 If outbound resources (Kafka or database) require TLS connection, trust store with required certificates should also be provided.
 
 One of the options is to provide trust store via custom `initContainer`.
 
-There are some requirements if custom initContainer is used for providing trust store.
+There are some requirements if custom `initContainer` is used for providing trust store.
 First, initContainer definition should be added to values file. Besides that, custom `volume`, `volumeMount` and environment variables should be added also.
 
 For example, custom `initContainer` could have this definition:
@@ -272,16 +272,20 @@ customMounts:
 ```
 
 Note that `mountPath` variable is used to specify a location of trust store in person-structure container.
-To make trust store available to underlying application server, its location should be defined in following environment variables:
+Suggested location is: `/mnt/k8s/trust-store`.
+
+To make trust store available to underlying application server, its location (absolute path - `mountPath` and file name) should be defined in following environment variables:
 
 ```yaml
 customEnv:
   - name: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
-    value: /some/mount/path # this is the path defined in volumeMount and has to contain full trust store file location
+    value: /some/mount/path/trust-store-file # path defined in volumeMount, has to contain full trust store file location
+  - name: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_TYPE
+    value: JKS # defines provided trust store type (PKCS12, JKS, or other)
   - name: SSL_TRUST_STORE_FILE
-    value: /some/mount/path # this is the path defined in volumeMount and has to contain full trust store file location
+    value: /some/mount/path/trust-store-file # path defined in volumeMount, has to contain full trust store file location
   - name: JAVAX_NET_SSL_TRUST_STORE
-    value: /some/mount/path # this is the path defined in volumeMount and has to contain full trust store file location
+    value: /some/mount/path/trust-store-file # path defined in volumeMount, has to contain full trust store file location
 ```
 
 #### Provide trust store from predefined secret
@@ -298,22 +302,26 @@ mountTrustStoreFromSecret:
   secretName: "name-of-trust-store-secret" # string value
   location: "/path/to/trust-store" # string value
   trustStoreName: "name-of-trust-store-file-from-secret" # string value
+  trustStoreType: "type-of-trust-store" # string value, default is JKS
 ```
 
 `location` attribute is used to define where trust store file will be located inside container.
 Any location is fine, as long as it doesn't override any existing container path.
+Suggested location is: `/mnt/k8s/trust-store`.
 
 `trustStoreName` is the actual name of the trust store file itself, as defined in secret.
 
 Those two parameters are joined together to form an absolute path to trust store file.
 
+Default trust store type is JKS and if other type of trust store file is provided, it has to be specified in `trustStoreType` attribute, for example "PKCS12".
+
 When using secret to mount trust store, no additional custom setup is required.
 
-#### Provide mTLS key store from initContainer
+#### Provide mTLS key store from `initContainer`
 
 mTLS support can also be added to person-structure application in two different ways.
 
-As for trust store, key store could also be provided via custom initContainer, with similar requirements.
+As for trust store, key store could also be provided via custom `initContainer`, with similar requirements.
 
 For example, custom `initContainer` could have this definition:
 
@@ -348,15 +356,17 @@ customMounts:
 ```
 
 Note that `mountPath` variable is used to specify a location of key store in person-structure container.
-To make key store available to underlying application server, its location should be defined in environment variable.
+Suggested location is: `/mnt/k8s/trust-store`.
+
+To make key store available to underlying application server, its location (absolute path - `mountPath` and file name) should be defined in environment variable.
 Additionally, key store type should also be defined, for example:
 
 ```yaml
 customEnv:
   - name: SERVER_SSL_KEY_STORE_FILE
-    value: /some/mount/path # this is the path defined in volumeMount and has to contain full key store file location
+    value: /some/mount/path/key-store-file # path defined in volumeMount, has to contain full key store file location
   - name: SSL_KEY_STORE_TYPE
-    value: PKCS12 # define key store type (PKCS12, JKS, or other)
+    value: PKCS12 # defines key store type (PKCS12, JKS, or other)
 ```
 
 #### Provide mTLS key store from predefined secret
@@ -372,14 +382,18 @@ mountKeyStoreFromSecret:
   secretName: "name-of-key-store-secret" # string value
   location: "/path/to/key-store" # string value
   keyStoreName: "name-of-key-store-file-from-secret" # string value
+  keyStoreType: "type-of-key-store" # string value, default is JKS
 ```
 
 `location` attribute is used to define where key store file will be located inside container (folder structure only).
 Any location is fine, as long as it doesn't override any existing container path.
+Suggested location is: `/mnt/k8s/key-store`.
 
 `keyStoreName` is the actual name of the key store file itself, as defined in secret.
 
 Those two parameters are joined together to form an absolute path to key store file.
+
+Default key store type is JKS and if other type of key store file is provided, it has to be specified in `keyStoreType` attribute, for example "PKCS12".
 
 When using secret to mount key store, no additional custom setup is required.
 
@@ -455,6 +469,7 @@ logger:
   logToFile: true # boolean value, default is false
   rollingFileAppender: true # boolean value, default is false
   logDir: "/custom/log/folder"
+  logDirMount:
     enabled: true # boolean value, default is false
     spec:
       emptyDir: {} # defines mount type, other types can be used also
@@ -467,6 +482,7 @@ logger:
   logToFile: true # boolean value, default is false
   rollingFileAppender: true # boolean value, default is false
   logDir: "/custom/log/folder"
+  logDirMount:
     enabled: true # boolean value, default is false
     spec:
       flexVolume:
@@ -479,7 +495,7 @@ logger:
           gid: 1000
 ```
 
-Note that any type of mount specification can be used by following standard Kubernetes mount specification, the only requirement is that it has to be defined under `logger.logDir.spec` attribute in values file.
+Note that any type of mount specification can be used by following standard Kubernetes mount specification, the only requirement is that it has to be defined under `logger.logDirMount.spec` attribute in values file.
 
 ### Modifying deployment strategy
 
@@ -547,49 +563,37 @@ deployment:
     successThreshold: 1
     failureThreshold: 2
     httpGet:
-      path: /health/readiness?__cbhck=Health/k8s
+      path: /health/readiness
       port: http
       scheme: HTTPS
-      httpHeaders:
-        - name: Content-Type
-          value: application/json
-        - name: User-Agent
-          value: Health/k8s
-        - name: Host
-          value: localhost
   livenessProbe:
     initialDelaySeconds: 60
     periodSeconds: 60
     timeoutSeconds: 10
     failureThreshold: 3
     httpGet:
-      path: /health/liveness?__cbhck=Health/k8s
+      path: /health/liveness
       port: http
       scheme: HTTPS
-      httpHeaders:
-        - name: Content-Type
-          value: application/json
-        - name: User-Agent
-          value: Health/k8s
-        - name: Host
-          value: localhost
 ```
 
 Probes can be modified with different custom attributes simply by setting a different `deployment.readinessProbe` or `deployment.livenessProbe` value structure.
 
-For example, this setup would remove `httpHeaders` attributes from `livenessProbe` and remove query parameters from default `path`:
+For example, this setup would increase `periodSeconds`, add `httpHeaders` attributes and apply query parameters to `path` of `livenessProbe`:
 
 ```yaml
 deployment:
   livenessProbe:
-    initialDelaySeconds: 60
-    periodSeconds: 60
-    timeoutSeconds: 10
-    failureThreshold: 3
+    periodSeconds: 180
     httpGet:
-      path: /health/liveness # do not modify base path
-      port: http # do not modify port name
-      scheme: HTTPS # do not modify scheme
+      path: /health/liveness?__cbhck=Health/k8s # do not modify base path
+      httpHeaders:
+        - name: Content-Type
+          value: application/json
+        - name: User-Agent
+          value: Health/k8s
+        - name: Host
+          value: localhost
 ```
 
 Note that Person structure has health checks available within the `/health` endpoint (`/health/readiness` for readiness and `/health/liveness` for liveness), and this base paths should not modified, only query parameters are subject to change.
