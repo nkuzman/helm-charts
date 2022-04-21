@@ -56,7 +56,7 @@ In order to assure connectivity to those backends, it's required to set basic in
 All values required for PostgreSQL database connection are defined within `datasource` parent attribute.
 Application will not be able to connect to database if all attributes are not filled.
 
-Datasource attributes:
+Required datasource attributes:
 
 ```yaml
 datasource:
@@ -82,6 +82,15 @@ secret:
   decryptionKey: "my-encryption-key" # some custom encryption key
   datasourcePassword: "{AES}S0m3H4sh" # datasource password for user defined in datasource.user encrypted with custom encryption key
   liquibasePassword: "S0m3H4sh" # base64 encoded password for Liquibase user defined in datasource.liquibaseUser attribute
+```
+
+It's possible to additionally customize datasource connection by overriding following default attributes:
+
+```yaml
+datasource:
+  connTimeout: 60000 # defines time (in ms) after which active connection will timeout and be closed
+  maxPoolSize: 2 # defines max size of database connection pool
+  minIdle: 0 # defines min number of retained idle connections
 ```
 
 ### Kafka setup
@@ -729,11 +738,21 @@ tolerations:
     tolerationSeconds: 3600
 ```
 
+### Adding custom pod annotations
+
+Custom pod annotations can be added by listing them under `podAnnotations` attribute structure, for example:
+
+```yaml
+podAnnotations:
+  custom.annotation: custom-value
+  other.annotation: other-value
+```
+
 ### Additional custom configuration
 
 There are some other customizable attributes predefined in Person structure application.
 
-One of them is related to HTTP response code which is returned by application if health check fails.
+One of them is related to HTTP return code which is returned by application if health check fails.
 Default value for this attribute is 418 but it can be customized if necessary, for example:
 
 ```yaml
