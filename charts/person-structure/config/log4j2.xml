@@ -219,12 +219,6 @@
       <AppenderRef ref="Application"/>
       {{- end }}
       <AppenderRef ref="Console" />
-    </Logger>
-    <Logger name="hr.vestigo.springtemplate.app.DecryptPropertiesEnvironmentPostProcessor" level="TRACE" additivity="false">
-      {{- if .logToFile }}
-      <AppenderRef ref="Application"/>
-      {{- end }}
-      <AppenderRef ref="Console" />
     </Logger>    
 
     <Root level="INFO">

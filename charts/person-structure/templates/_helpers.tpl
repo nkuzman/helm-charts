@@ -69,27 +69,25 @@ Volumes
   emptyDir:
     medium: "Memory"
 {{- end }}
-- name: keystore
 {{- if .Values.mountKeyStoreFromSecret.enabled }}
+- name: keystore
   secret:
     secretName: {{ .Values.mountKeyStoreFromSecret.secretName }}
-{{- if and .Values.mountKeyStoreFromSecret.certPath .Values.mountKeyStoreFromSecret.keyPath }}
+{{- if .Values.mountKeyStoreFromSecret.keyStoreName }}
     items:
-      - path: {{ .Values.mountKeyStoreFromSecret.certPath }}
-        key: {{ .Values.mountKeyStoreFromSecret.certPath }}
-      - path: {{ .Values.mountKeyStoreFromSecret.keyPath }}
-        key: {{ .Values.mountKeyStoreFromSecret.keyPath }}
+      - path: {{ .Values.mountKeyStoreFromSecret.keyStoreName }}
+        key: {{ .Values.mountKeyStoreFromSecret.keyStoreName }}
 {{- end }}
 {{- end }}
 {{- if .Values.mountTrustStoreFromSecret.enabled }}
 - name: truststore
   secret:
     secretName: {{ .Values.mountTrustStoreFromSecret.secretName }}
-{{- end }}
 {{- if .Values.mountTrustStoreFromSecret.trustStoreName }}
     items:
       - path: {{ .Values.mountTrustStoreFromSecret.trustStoreName }}
         key: {{ .Values.mountTrustStoreFromSecret.trustStoreName }}
+{{- end }}
 {{- end }}
 {{- if and .Values.logger.logDirMount.enabled .Values.logger.logDirMount.spec }}
 - name: logdir
@@ -125,19 +123,7 @@ Mounts for person-structure application
   name: server-cert
 {{- end }}
 {{- if .Values.mountKeyStoreFromSecret.enabled }}
-- mountPath: /mnt/k8s/tls-server/key.pem
-  name: keystore
-{{- if .Values.mountKeyStoreFromSecret.keyPath }}
-  subPath: {{ .Values.mountKeyStoreFromSecret.keyPath }}
-{{- end }}
-- mountPath: /mnt/k8s/tls-server/cert.pem
-  name: keystore
-{{- if .Values.mountKeyStoreFromSecret.certPath }}
-  subPath: {{ .Values.mountKeyStoreFromSecret.certPath }}
-{{- end }}
-{{/* else if initcontainer TODO */}}
-{{- else }}
-- mountPath: /mnt/k8s/tls-server
+- mountPath: {{ .Values.mountKeyStoreFromSecret.location }}
   name: keystore
 {{- end }}
 {{- if .Values.mountTrustStoreFromSecret.enabled }}

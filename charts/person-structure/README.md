@@ -27,7 +27,7 @@ secret:
   datasourcePassword: "AES-encoded-datasource-password" # string value
   kafkaPassword: "AES-encoded-kafka-password" # string value
   kafkaSchemaRegistryPassword: "AES-encoded-kafka-schema-registry-password" # string value
-  liquibasePassword: "Base-64-encoded-password-for-LiquiBase-user" # string value
+  liquibasePassword: "Base-64-encoded-password-for-liquibase-user" # string value
 
 datasource:
   host: "datasource-host" # string value
@@ -64,16 +64,16 @@ datasource:
   port: 5432 # PostgreSQL port number 
   dbName: "database-name" # Name of PostgreSQL database
   user: "database-user" # User which application will use to connect to PostgreSQL
-  liquibaseUser: "liquibase-user" # User which LiquiBase container will use to apply database changes
+  liquibaseUser: "liquibase-user" # User which Liquibase container will use to apply database changes
   schema: "database-schema" # PostgreSQL schema for Person structure application
 ```
 
-In addition to datasource attributes, it's required to provide an AES encrypted password for database user specified in `datasource.user`, as well as base64 encoded user for LiquiBase user defined in `datasource.liquibaseUser`.
+In addition to datasource attributes, it's required to provide an AES encrypted password for database user specified in `datasource.user`, as well as base64 encoded user for Liquibase user defined in `datasource.liquibaseUser`.
 
 Encryption key used to encrypt and decrypt datasource password (as well as Kafka passwords) is defined in `secret.decryptionKey` attribute.
 Use this key to encrypt datasource password and define it in `secret.datasourcePassword`.
 
-Password for LiquiBase user (which will apply database changes for each version) has to be base64 encoded, and is not related to `secret.decryptionKey` attribute.
+Password for Liquibase user (which will apply database changes for each version) has to be base64 encoded, and is not related to `secret.decryptionKey` attribute.
 
 Datasource secret configuration:
 
@@ -616,7 +616,7 @@ securityContext:
   runAsGroup: 0
 ```
 
-Note that container level security context will be applied to both containers in Person structure pod (LiquiBase init container and Person structure container).
+Note that container level security context will be applied to both containers in Person structure pod (Liquibase init container and Person structure container).
 
 ### Customizing network setup
 
