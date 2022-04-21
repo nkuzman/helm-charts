@@ -160,7 +160,7 @@ spec:
             - name: LOGGING_CONFIG
               value: /usr/app/config/log4j2.xml
             - name: LOGGER_EXCLUDE_ENDPOINTS
-              value: /, /health, /health/liveness, /health/readiness
+              value: /, /health, /health/liveness, /health/readiness, /prometheus
             - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
               value: {{ .Values.datasource.connTimeout | quote }}
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
