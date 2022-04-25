@@ -221,8 +221,6 @@ When using initContainer for key store, volume will be stored in memory (`emptyD
 
 #### Provide server certificate from predefined secret
 
-**TODO:** opis koji tip certifikata, algoritam i sl.
-
 Server certificate can be provided using predefined secret.
 **Note that this secret has to be created in target namespace prior to installation of Person structure application.**
 Additionally, both certificate and key files should be in one single secret.
