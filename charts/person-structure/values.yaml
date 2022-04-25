@@ -57,6 +57,7 @@ secret:
   kafkaPassword: ""
   kafkaSchemaRegistryPassword: ""
   liquibasePassword: "" # b64 encoded
+  trustStorePassword: "" # b64 encoded
 
 logger:
   logToFile: false

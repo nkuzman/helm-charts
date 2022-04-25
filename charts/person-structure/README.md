@@ -293,6 +293,8 @@ customEnv:
     value: /some/mount/path/trust-store-file # path defined in volumeMount, has to contain full trust store file location
   - name: JAVAX_NET_SSL_TRUST_STORE
     value: /some/mount/path/trust-store-file # path defined in volumeMount, has to contain full trust store file location
+  - name: JAVAX_NET_SSL_TRUST_STORE_PASSWORD
+    value: trustStorePassw0rd # password for trust store file
 ```
 
 #### Provide trust store from predefined secret
@@ -321,6 +323,13 @@ Suggested location is: `/mnt/k8s/trust-store`.
 Those two parameters are joined together to form an absolute path to trust store file.
 
 Default trust store type is JKS and if other type of trust store file is provided, it has to be specified in `trustStoreType` attribute, for example "PKCS12".
+
+Trust store password has to be provided as base64 encoded string in `secret.trustStorePassword` attribute, for example:
+
+```yaml
+secret:
+  trustStorePassword: "cGFzc3cwcmQ=" # base64 encoded trust store password
+```
 
 When using secret to mount trust store, no additional custom setup is required.
 

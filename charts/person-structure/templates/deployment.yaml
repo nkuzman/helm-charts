@@ -183,7 +183,7 @@ spec:
             - name: JAVAX_NET_SSL_TRUST_STORE
               value: {{ .Values.mountTrustStoreFromSecret.location }}/{{ .Values.mountTrustStoreFromSecret.trustStoreName }}
             - name: JAVAX_NET_SSL_TRUST_STORE_PASSWORD
-              value: "${truststore.password}"
+              value: {{ .Values.secret.trustStorePassword | b64dec }}
             {{- end }}
             {{- if .Values.mountKeyStoreFromSecret.enabled }}
             - name: SERVER_SSL_KEY_STORE_FILE
