@@ -182,16 +182,20 @@ spec:
               value: {{ .Values.mountTrustStoreFromSecret.location }}/{{ .Values.mountTrustStoreFromSecret.trustStoreName }}
             - name: JAVAX_NET_SSL_TRUST_STORE
               value: {{ .Values.mountTrustStoreFromSecret.location }}/{{ .Values.mountTrustStoreFromSecret.trustStoreName }}
+            {{- if .Values.secret.trustStorePassword }}
             - name: JAVAX_NET_SSL_TRUST_STORE_PASSWORD
               value: {{ .Values.secret.trustStorePassword | b64dec }}
+            {{- end }}
             {{- end }}
             {{- if .Values.mountKeyStoreFromSecret.enabled }}
             - name: SERVER_SSL_KEY_STORE_FILE
               value: {{ required "Please specify key store location in mountKeyStoreFromSecret.location" .Values.mountKeyStoreFromSecret.location }}/{{ required "Please specify key store file name in mountKeyStoreFromSecret.keyStoreName" .Values.mountKeyStoreFromSecret.keyStoreName }}
             - name: SSL_KEY_STORE_TYPE
               value: {{ required "Please specify key store type in mountKeyStoreFromSecret.keyStoreType" .Values.mountKeyStoreFromSecret.keyStoreType }}
+            {{- if .Values.secret.keyStorePassword }}
             - name: SERVER_SSL_KEY_STORE_PASSWORD
               value: {{ .Values.secret.keyStorePassword | b64dec }}
+            {{- end }}
             {{- end }}
             {{- with .Values.customEnv }}
             {{- toYaml . | nindent 12 }}
