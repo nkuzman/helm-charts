@@ -328,7 +328,7 @@ Trust store password has to be provided as base64 encoded string in `secret.trus
 
 ```yaml
 secret:
-  trustStorePassword: "cGFzc3cwcmQ=" # base64 encoded trust store password
+  trustStorePassword: "cGFzc3cwcmQ=" # base64 encoded trust store password, default is "changeit"
 ```
 
 When using secret to mount trust store, no additional custom setup is required.
@@ -383,6 +383,8 @@ customEnv:
     value: /some/mount/path/key-store-file # path defined in volumeMount, has to contain full key store file location
   - name: SSL_KEY_STORE_TYPE
     value: PKCS12 # defines key store type (PKCS12, JKS, or other)
+  - name: SERVER_SSL_KEY_STORE_PASSWORD
+    value: keyStorePassw0rd # password for key store file
 ```
 
 #### Provide mTLS key store from predefined secret
@@ -410,6 +412,13 @@ Suggested location is: `/mnt/k8s/key-store`.
 Those two parameters are joined together to form an absolute path to key store file.
 
 Default key store type is JKS and if other type of key store file is provided, it has to be specified in `keyStoreType` attribute, for example "PKCS12".
+
+Key store password has to be provided as base64 encoded string in `secret.keyStorePassword` attribute, for example:
+
+```yaml
+secret:
+  keyStorePassword: "cGFzc3cwcmQ=" # base64 encoded trust store password, default is "changeit"
+```
 
 When using secret to mount key store, no additional custom setup is required.
 
