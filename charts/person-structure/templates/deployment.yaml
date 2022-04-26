@@ -190,6 +190,8 @@ spec:
               value: {{ required "Please specify key store location in mountKeyStoreFromSecret.location" .Values.mountKeyStoreFromSecret.location }}/{{ required "Please specify key store file name in mountKeyStoreFromSecret.keyStoreName" .Values.mountKeyStoreFromSecret.keyStoreName }}
             - name: SSL_KEY_STORE_TYPE
               value: {{ required "Please specify key store type in mountKeyStoreFromSecret.keyStoreType" .Values.mountKeyStoreFromSecret.keyStoreType }}
+            - name: SERVER_SSL_KEY_STORE_PASSWORD
+              value: {{ .Values.secret.keyStorePassword | b64dec }}
             {{- end }}
             {{- with .Values.customEnv }}
             {{- toYaml . | nindent 12 }}
